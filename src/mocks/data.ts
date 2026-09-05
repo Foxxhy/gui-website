@@ -5,6 +5,7 @@ import {
     IStatus,
     type IArticle,
     type IContactFormConfiguration,
+    type IFeatureFlags,
     type IPage,
     type ITag,
     type IUser,
@@ -50,6 +51,12 @@ export const accounts: IMockAccount[] = [
     { user: users[0], login: 'admin', password: 'admin' },
     { user: users[1], login: 'editor', password: 'editor' },
 ]
+
+export const featureFlags: IFeatureFlags = {
+    home: true,
+    articles: true,
+    contact: true,
+}
 
 export const tags: ITag[] = [
     { id: 'tag-association', name: 'Association', slug: 'association', style: 'green', description: 'La vie et les actions de l’association.' },

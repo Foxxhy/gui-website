@@ -43,7 +43,7 @@ export const AdminMutationForm = ({
     children,
     preview,
 }: {
-    area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users'
+    area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
     operation: string
     children: React.ReactNode
     preview?: IAdminPreview

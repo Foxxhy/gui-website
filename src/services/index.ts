@@ -1,6 +1,7 @@
 export * from './auth'
 export * from './contact'
 export * from './content'
+export * from './features'
 export * from './session'
 export * from './tags'
 export * from './users'

@@ -1,11 +1,12 @@
 'use server'
 
-import { authService, contactService, contentService, getCurrentSession, tagService, userService } from '@/services'
+import { revalidatePath } from 'next/cache'
+import { authService, contactService, contentService, featureService, getCurrentSession, tagService, userService } from '@/services'
 import type { IActionResult } from '@/types'
 
-type IAdminArea = 'articles' | 'pages' | 'contactForm' | 'tags' | 'users'
+type IAdminArea = 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
 
-const areas: IAdminArea[] = ['articles', 'pages', 'contactForm', 'tags', 'users']
+const areas: IAdminArea[] = ['articles', 'pages', 'contactForm', 'tags', 'users', 'features']
 
 export const submitAdminMutation = async (
     _previousState: IActionResult | undefined,
@@ -47,6 +48,17 @@ export const submitAdminMutation = async (
     }
     if (area === 'users') {
         const result = await userService.simulateMutation(values)
+        return { success: result.success, message: result.message, errors: result.errors }
+    }
+    if (area === 'features') {
+        const enabled = formData.getAll('enabled').map(String).includes('true')
+        const result = await featureService.updateFlag(String(formData.get('feature') ?? ''), enabled)
+        if (result.success) {
+            revalidatePath('/')
+            revalidatePath('/articles')
+            revalidatePath('/articles/[slug]', 'page')
+            revalidatePath('/contact')
+        }
         return { success: result.success, message: result.message, errors: result.errors }
     }
     return contactService.simulateConfigurationMutation()

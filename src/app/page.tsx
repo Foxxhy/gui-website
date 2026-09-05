@@ -1,18 +1,22 @@
 import { PageSections, PublicNavigation } from '@/components'
-import { contentService } from '@/services'
+import { contentService, featureService } from '@/services'
+import { notFound } from 'next/navigation'
 
 export default async function Home() {
+    const features = await featureService.getFlags()
+    if (!features.home) notFound()
+
     const [page, articles] = await Promise.all([
         contentService.getPageBySlug('accueil'),
-        contentService.getPublishedArticles(),
+        features.articles ? contentService.getPublishedArticles() : Promise.resolve([]),
     ])
 
     if (!page) return null
 
     return (
         <>
-            <PublicNavigation />
-            <main><PageSections sections={page.sections} featuredArticles={articles} /></main>
+            <PublicNavigation features={features} />
+            <main><PageSections sections={page.sections} featuredArticles={articles} features={features} /></main>
         </>
     )
 }

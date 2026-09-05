@@ -14,7 +14,7 @@ export const authService = {
         if (!user || user.role === IRole.BLOCKED) return undefined
         return { user }
     },
-    canManage: (role: IRole, area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users') => {
+    canManage: (role: IRole, area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features') => {
         if (role === IRole.BLOCKED) return false
         if (area === 'users') return role === IRole.ADMIN
         return role === IRole.ADMIN || role === IRole.EDITOR

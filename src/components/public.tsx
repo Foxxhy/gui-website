@@ -1,16 +1,22 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import type { IArticle, IContactField, IPageSection } from '@/types'
+import type { IArticle, IContactField, IFeatureFlags, IPageSection } from '@/types'
+
+const enabledFeatures: IFeatureFlags = {
+    home: true,
+    articles: true,
+    contact: true,
+}
 
 export const ArticleTags = ({ tags }: Pick<IArticle, 'tags'>) => tags?.length ? <p>Tags : {tags.map((tag) => <span key={tag.id} className="tag" data-tag-style={tag.style}>[{tag.name}] </span>)}</p> : null
 
-export const PublicNavigation = () => (
+export const PublicNavigation = ({ features }: { features: IFeatureFlags }) => (
     <nav aria-label="Navigation principale">
         <ul>
-            <li><Link href="/">Accueil</Link></li>
-            <li><Link href="/articles">Articles</Link></li>
+            {features.home && <li><Link href="/">Accueil</Link></li>}
+            {features.articles && <li><Link href="/articles">Articles</Link></li>}
             <li><Link href="/association">L’association</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
+            {features.contact && <li><Link href="/contact">Contact</Link></li>}
             <li><Link href="/connexion">Connexion</Link></li>
         </ul>
     </nav>
@@ -46,9 +52,11 @@ export const ContactField = ({ field, disabled = false }: { field: IContactField
 export const PageSections = ({
     sections,
     featuredArticles = [],
+    features = enabledFeatures,
 }: {
     sections: IPageSection[]
     featuredArticles?: IArticle[]
+    features?: IFeatureFlags
 }) => (
     <>
         {[...sections].sort((first, second) => first.order - second.order).map((section) => {
@@ -59,9 +67,11 @@ export const PageSections = ({
                 return <section key={section.id}><h2>{section.title}</h2><p>{section.content}</p></section>
             }
             if (section.type === 'featured-articles') {
+                if (!features.articles) return null
                 const selected = featuredArticles.filter((article) => section.articleSlugs.includes(article.slug))
                 return <section key={section.id}><h2>{section.title}</h2><ArticleList articles={selected} /></section>
             }
+            if (section.href === '/contact' && !features.contact) return null
             return <section key={section.id}><h2>{section.title}</h2>{section.content && <p>{section.content}</p>}<Link href={section.href}>{section.label}</Link></section>
         })}
     </>
