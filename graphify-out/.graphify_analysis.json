@@ -1,10 +1,18 @@
 {
   "communities": {
     "0": [
+      "src_actions_admin",
+      "src_actions_admin_areas",
+      "src_actions_admin_iadminarea",
+      "src_actions_admin_submitadminmutation",
+      "src_actions_analytics_trackanalyticsevent",
+      "src_analytics_analyticstracker",
+      "src_analytics_analyticstracker_analyticstracker",
       "src_app_administration_articles_id_page",
       "src_app_administration_articles_id_page_editarticlepage",
       "src_app_administration_articles_nouveau_page",
       "src_app_administration_articles_nouveau_page_newarticlepage",
+      "src_app_administration_articles_nouveau_page_newarticlepreview",
       "src_app_administration_articles_page",
       "src_app_administration_articles_page_administrationarticlespage",
       "src_app_administration_formulaire_contact_id_page",
@@ -18,10 +26,18 @@
       "src_app_administration_pages_id_page_editpagepage",
       "src_app_administration_pages_page",
       "src_app_administration_pages_page_administrationpagespage",
+      "src_app_administration_tags_id_page",
+      "src_app_administration_tags_id_page_edittagpage",
+      "src_app_administration_tags_nouveau_page",
+      "src_app_administration_tags_nouveau_page_newtagpage",
+      "src_app_administration_tags_page",
+      "src_app_administration_tags_page_administrationtagspage",
       "src_app_administration_utilisateurs_nouveau_page",
       "src_app_administration_utilisateurs_nouveau_page_newuserpage",
       "src_app_articles_page",
       "src_app_articles_page_articlespage",
+      "src_app_articles_page_parsepage",
+      "src_app_articles_page_parsetagslugs",
       "src_app_articles_slug_page",
       "src_app_articles_slug_page_articlepage",
       "src_app_association_page",
@@ -34,22 +50,27 @@
       "src_app_page_home",
       "src_components_forms_adminmutationform",
       "src_components_index",
-      "src_components_public_articlelist",
+      "src_components_preview_adminpreviewbutton",
       "src_components_public_pagesections",
       "src_components_public_publicnavigation",
       "src_services_contact_contactservice",
-      "src_services_content_contentservice"
+      "src_services_content_contentservice",
+      "src_services_features_featureservice",
+      "src_services_index",
+      "src_services_tags_tagservice"
     ],
     "1": [
-      "src_components_public",
+      "src_components_article_filters",
+      "src_components_article_filters_articlefilters",
+      "src_components_article_filters_createarticlesurl",
       "src_types_article",
       "src_types_article_iarticle",
+      "src_types_article_iarticlequery",
       "src_types_article_ifilter",
       "src_types_auth",
       "src_types_auth_administration_permissions",
       "src_types_auth_iauthenticateduser",
       "src_types_auth_icredentials",
-      "src_types_auth_isession",
       "src_types_category",
       "src_types_category_icategory",
       "src_types_category_icategory_actualites",
@@ -69,9 +90,12 @@
       "src_types_media_imedia",
       "src_types_page",
       "src_types_page_ifeatured",
+      "src_types_page_ipage",
       "src_types_page_ipagesection",
       "src_types_page_iseo",
       "src_types_page_isettings",
+      "src_types_tag",
+      "src_types_tag_itag",
       "src_types_user",
       "src_types_user_irole",
       "src_types_user_irole_admin",
@@ -80,69 +104,49 @@
       "src_types_user_iuser"
     ],
     "2": [
-      "src_actions_admin",
-      "src_actions_admin_areas",
-      "src_actions_admin_iadminarea",
-      "src_actions_admin_submitadminmutation",
-      "src_actions_auth",
-      "src_actions_auth_logoutaction",
-      "src_actions_contact",
-      "src_actions_index",
-      "src_app_administration_layout",
-      "src_app_administration_layout_administrationlayout",
-      "src_app_administration_utilisateurs_id_page",
-      "src_app_administration_utilisateurs_id_page_edituserpage",
-      "src_app_administration_utilisateurs_page",
-      "src_app_administration_utilisateurs_page_administrationuserspage",
-      "src_configs_app",
-      "src_configs_app_appconfig",
-      "src_configs_app_envordefault",
-      "src_configs_app_iappconfig",
-      "src_configs_app_optionalenv",
-      "src_configs_app_positiveintegerenvordefault",
-      "src_configs_index",
-      "src_proxy",
-      "src_proxy_config",
-      "src_proxy_proxy",
-      "src_services_auth",
-      "src_services_auth_authservice",
-      "src_services_auth_session_cookie",
-      "src_services_index",
-      "src_services_session",
-      "src_services_session_getcurrentsession",
-      "src_services_users_userservice"
-    ],
-    "3": [
       "src_mocks_data",
       "src_mocks_data_accounts",
       "src_mocks_data_articles",
       "src_mocks_data_contactformconfiguration",
+      "src_mocks_data_featureflags",
       "src_mocks_data_imockaccount",
       "src_mocks_data_pages",
+      "src_mocks_data_tags",
       "src_mocks_data_users",
       "src_mocks_index",
       "src_services_contact",
       "src_services_contact_sortedfields",
       "src_services_content",
       "src_services_content_simulatedresult",
+      "src_services_content_validatearticle",
+      "src_services_content_validatepage",
+      "src_services_features",
+      "src_services_features_hasfeaturekey",
+      "src_services_tags",
+      "src_services_tags_result",
+      "src_services_tags_taginput",
+      "src_services_tags_validate",
       "src_services_users",
+      "src_services_validation",
+      "src_services_validation_fielderrors",
+      "src_services_validation_isvalidemail",
+      "src_services_validation_isvalidslug",
+      "src_services_validation_maxlengtherror",
+      "src_services_validation_normalizeslug",
+      "src_services_validation_readformstring",
+      "src_services_validation_requirederror",
+      "src_services_validation_tostrictboolean",
+      "src_services_validation_totrimmedstring",
+      "src_services_validation_validation_limits",
       "src_types_article_istatus",
       "src_types_article_istatus_cancelled",
       "src_types_article_istatus_draft",
       "src_types_article_istatus_published",
-      "src_types_contact_form",
-      "src_types_contact_form_iactionresult",
-      "src_types_contact_form_icontactfield",
-      "src_types_contact_form_icontactfieldtype",
-      "src_types_contact_form_icontactfieldtype_email",
-      "src_types_contact_form_icontactfieldtype_select",
-      "src_types_contact_form_icontactfieldtype_text",
-      "src_types_contact_form_icontactfieldtype_textarea",
-      "src_types_contact_form_icontactformconfiguration",
-      "src_types_contact_form_ifielderrors",
-      "src_types_page_ipage"
+      "src_types_feature",
+      "src_types_feature_ifeatureflags",
+      "src_types_feature_ifeaturekey"
     ],
-    "4": [
+    "3": [
       "biome",
       "biome_actions_source",
       "biome_assist",
@@ -171,7 +175,128 @@
       "biome_vcs_enabled",
       "biome_vcs_useignorefile"
     ],
+    "4": [
+      "src_actions_analytics",
+      "src_analytics_index",
+      "src_analytics_index_getperiodrange",
+      "src_analytics_index_getstats",
+      "src_analytics_index_isknowneventtype",
+      "src_analytics_index_periodlabels",
+      "src_analytics_index_trackevent",
+      "src_app_administration_analytics_page",
+      "src_app_administration_analytics_page_administrationanalyticspage",
+      "src_app_administration_analytics_page_parseperiod",
+      "src_app_administration_analytics_page_periods",
+      "src_mocks_analytics",
+      "src_mocks_analytics_analyticsevents",
+      "src_mocks_analytics_daysago",
+      "src_services_analytics",
+      "src_services_analytics_analyticsservice",
+      "src_services_analytics_formatanalyticseventname",
+      "src_types_analytics",
+      "src_types_analytics_analytics_event_types",
+      "src_types_analytics_analyticseventtype",
+      "src_types_analytics_analyticsperiod",
+      "src_types_analytics_ianalyticsarticlestat",
+      "src_types_analytics_ianalyticsevent",
+      "src_types_analytics_ianalyticspagestat",
+      "src_types_analytics_ianalyticsperiodrange",
+      "src_types_analytics_ianalyticsstats"
+    ],
     "5": [
+      "src_app_layout",
+      "src_app_layout_metadata",
+      "src_app_layout_rootlayout",
+      "src_components_markdown_content",
+      "src_components_markdown_content_markdowncontent",
+      "src_configs_app",
+      "src_configs_app_appconfig",
+      "src_configs_app_envordefault",
+      "src_configs_app_iappconfig",
+      "src_configs_app_optionalenv",
+      "src_configs_app_positiveintegerenvordefault",
+      "src_configs_index",
+      "src_proxy",
+      "src_proxy_config",
+      "src_proxy_proxy",
+      "src_services_security",
+      "src_services_security_allowedtags",
+      "src_services_security_createcsp",
+      "src_services_security_futureabusecontrols",
+      "src_services_security_issafeurl",
+      "src_services_security_iuploadpolicy",
+      "src_services_security_sanitizemarkdown",
+      "src_services_security_validateuploadmetadata"
+    ],
+    "6": [
+      "src_actions_auth_loginaction",
+      "src_components_forms",
+      "src_components_forms_initialstate",
+      "src_components_forms_loginform",
+      "src_components_preview",
+      "src_components_preview_adminpreview",
+      "src_components_preview_getvalue",
+      "src_components_preview_iadminpreview",
+      "src_components_preview_previewarticle",
+      "src_components_preview_previewcontactconfiguration",
+      "src_components_preview_previewcontactform",
+      "src_components_preview_previewpage",
+      "src_components_preview_previewtag",
+      "src_components_preview_tocontactfield",
+      "src_components_public",
+      "src_components_public_articlelist",
+      "src_components_public_articlepagination",
+      "src_components_public_articletags",
+      "src_components_public_contactfield",
+      "src_components_public_createarticlesurl",
+      "src_components_public_enabledfeatures",
+      "src_types_article_iarticlepagination"
+    ],
+    "7": [
+      "marked",
+      "next",
+      "package",
+      "package_dependencies",
+      "package_dependencies_marked",
+      "package_dependencies_next",
+      "package_dependencies_react",
+      "package_dependencies_react_dom",
+      "package_dependencies_sanitize_html",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_format",
+      "package_scripts_lint",
+      "package_scripts_start",
+      "package_version",
+      "react",
+      "react_dom",
+      "sanitize_html"
+    ],
+    "8": [
+      "babel_plugin_react_compiler",
+      "biomejs_biome",
+      "package_devdependencies",
+      "package_devdependencies_babel_plugin_react_compiler",
+      "package_devdependencies_biomejs_biome",
+      "package_devdependencies_tailwindcss",
+      "package_devdependencies_tailwindcss_postcss",
+      "package_devdependencies_types_node",
+      "package_devdependencies_types_react",
+      "package_devdependencies_types_react_dom",
+      "package_devdependencies_types_sanitize_html",
+      "package_devdependencies_typescript",
+      "tailwindcss",
+      "tailwindcss_postcss",
+      "types_node",
+      "types_react",
+      "types_react_dom",
+      "types_sanitize_html",
+      "typescript"
+    ],
+    "9": [
       "biome_files",
       "biome_files_ignoreunknown",
       "biome_files_includes",
@@ -188,14 +313,11 @@
       "ref_next_types_ts",
       "ref_ts",
       "ref_tsx",
-      "src_app_layout",
-      "src_app_layout_metadata",
-      "src_app_layout_rootlayout",
       "tsconfig",
       "tsconfig_exclude",
       "tsconfig_include"
     ],
-    "6": [
+    "10": [
       "ref_dom",
       "ref_dom_iterable",
       "ref_esnext",
@@ -216,79 +338,69 @@
       "tsconfig_compileroptions_strict",
       "tsconfig_compileroptions_target"
     ],
-    "7": [
-      "babel_plugin_react_compiler",
-      "biomejs_biome",
-      "package_devdependencies",
-      "package_devdependencies_babel_plugin_react_compiler",
-      "package_devdependencies_biomejs_biome",
-      "package_devdependencies_tailwindcss",
-      "package_devdependencies_tailwindcss_postcss",
-      "package_devdependencies_types_node",
-      "package_devdependencies_types_react",
-      "package_devdependencies_types_react_dom",
-      "package_devdependencies_typescript",
-      "tailwindcss",
-      "tailwindcss_postcss",
-      "types_node",
-      "types_react",
-      "types_react_dom",
-      "typescript"
+    "11": [
+      "src_actions_auth",
+      "src_actions_auth_logoutaction",
+      "src_actions_index",
+      "src_app_administration_layout",
+      "src_app_administration_layout_administrationlayout",
+      "src_app_administration_utilisateurs_id_page",
+      "src_app_administration_utilisateurs_id_page_edituserpage",
+      "src_app_administration_utilisateurs_page",
+      "src_app_administration_utilisateurs_page_administrationuserspage",
+      "src_services_auth",
+      "src_services_auth_authservice",
+      "src_services_auth_session_cookie",
+      "src_services_session",
+      "src_services_session_getcurrentsession",
+      "src_services_users_userservice",
+      "src_types_auth_isession"
     ],
-    "8": [
-      "next",
-      "package",
-      "package_dependencies",
-      "package_dependencies_next",
-      "package_dependencies_react",
-      "package_dependencies_react_dom",
-      "package_name",
-      "package_private",
-      "package_scripts",
-      "package_scripts_build",
-      "package_scripts_dev",
-      "package_scripts_format",
-      "package_scripts_lint",
-      "package_scripts_start",
-      "package_version",
-      "react",
-      "react_dom"
-    ],
-    "9": [
-      "src_actions_auth_loginaction",
+    "12": [
+      "src_actions_contact",
       "src_actions_contact_submitcontactaction",
-      "src_components_forms",
       "src_components_forms_contactform",
-      "src_components_forms_initialstate",
-      "src_components_forms_loginform"
+      "src_types_contact_form",
+      "src_types_contact_form_iactionresult",
+      "src_types_contact_form_icontactfield",
+      "src_types_contact_form_icontactfieldtype",
+      "src_types_contact_form_icontactfieldtype_email",
+      "src_types_contact_form_icontactfieldtype_select",
+      "src_types_contact_form_icontactfieldtype_text",
+      "src_types_contact_form_icontactfieldtype_textarea",
+      "src_types_contact_form_icontactformconfiguration",
+      "src_types_contact_form_ifielderrors"
     ],
-    "10": [
+    "13": [
       "postcss_config",
       "postcss_config_config"
     ],
-    "11": [
+    "14": [
       "src_app_administration_page",
       "src_app_administration_page_administrationpage"
     ],
-    "12": [
+    "15": [
       "src_app_not_found",
       "src_app_not_found_notfound"
     ]
   },
   "cohesion": {
-    "0": 0.08250355618776671,
-    "1": 0.10810810810810811,
-    "2": 0.12688172043010754,
-    "3": 0.10582010582010581,
-    "4": 0.07407407407407407,
-    "5": 0.09090909090909091,
-    "6": 0.10526315789473684,
-    "7": 0.11764705882352941,
-    "8": 0.11764705882352941,
-    "9": 0.4666666666666667,
-    "10": 1.0,
-    "11": 1.0,
-    "12": 1.0
+    "0": 0.07769423558897243,
+    "1": 0.08478513356562137,
+    "2": 0.09878048780487805,
+    "3": 0.07407407407407407,
+    "4": 0.13230769230769232,
+    "5": 0.11067193675889328,
+    "6": 0.1471861471861472,
+    "7": 0.09523809523809523,
+    "8": 0.10526315789473684,
+    "9": 0.10526315789473684,
+    "10": 0.10526315789473684,
+    "11": 0.21666666666666667,
+    "12": 0.15384615384615385,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0
   },
   "gods": [
     {
@@ -297,74 +409,52 @@
       "degree": 16
     },
     {
-      "id": "src_types_category_icategory",
-      "label": "ICategory",
-      "degree": 11
-    },
-    {
       "id": "src_components_forms_adminmutationform",
       "label": "AdminMutationForm()",
-      "degree": 11
-    },
-    {
-      "id": "src_types_article_iarticle",
-      "label": "IArticle",
-      "degree": 10
+      "degree": 13
     },
     {
       "id": "src_services_content_contentservice",
       "label": "contentService",
-      "degree": 10
+      "degree": 11
     },
     {
-      "id": "src_types_user_iuser",
-      "label": "IUser",
+      "id": "src_services_features_featureservice",
+      "label": "featureService",
+      "degree": 11
+    },
+    {
+      "id": "src_services_validation_totrimmedstring",
+      "label": "toTrimmedString()",
       "degree": 9
     },
     {
-      "id": "src_services_session_getcurrentsession",
-      "label": "getCurrentSession()",
-      "degree": 9
+      "id": "src_types_category_icategory",
+      "label": "ICategory",
+      "degree": 8
+    },
+    {
+      "id": "src_services_auth_authservice",
+      "label": "authService",
+      "degree": 8
+    },
+    {
+      "id": "src_types_article_istatus",
+      "label": "IStatus",
+      "degree": 8
+    },
+    {
+      "id": "src_types_tag_itag",
+      "label": "ITag",
+      "degree": 8
     },
     {
       "id": "src_types_media_imedia",
       "label": "IMedia",
-      "degree": 8
-    },
-    {
-      "id": "src_types_contact_form_iactionresult",
-      "label": "IActionResult",
-      "degree": 7
-    },
-    {
-      "id": "src_types_contact_form_icontactfieldtype",
-      "label": "IContactFieldType",
       "degree": 7
     }
   ],
   "surprises": [
-    {
-      "source": "IMockAccount",
-      "target": "IUser",
-      "source_files": [
-        "src/mocks/data.ts",
-        "src/types/user.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "bridges separate communities; peripheral node `IMockAccount` unexpectedly reaches hub `IUser`"
-    },
-    {
-      "source": "AdminMutationForm()",
-      "target": "submitAdminMutation()",
-      "source_files": [
-        "src/components/forms.tsx",
-        "src/actions/admin.ts"
-      ],
-      "confidence": "INFERRED",
-      "relation": "indirect_call",
-      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
-    },
     {
       "source": "exclude",
       "target": "!node_modules",
@@ -377,26 +467,48 @@
       "why": "connects across different repos/directories"
     },
     {
-      "source": "IFilter",
+      "source": "IForm",
       "target": "ICategory",
       "source_files": [
-        "src/types/article.ts",
+        "src/types/form.ts",
         "src/types/category.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "references",
-      "why": "peripheral node `IFilter` unexpectedly reaches hub `ICategory`"
+      "why": "peripheral node `IForm` unexpectedly reaches hub `ICategory`"
     },
     {
-      "source": "IAuthenticatedUser",
-      "target": "IUser",
+      "source": "IPage",
+      "target": "IMedia",
       "source_files": [
-        "src/types/auth.ts",
-        "src/types/user.ts"
+        "src/types/page.ts",
+        "src/types/media.ts"
       ],
       "confidence": "EXTRACTED",
-      "relation": "inherits",
-      "why": "peripheral node `IAuthenticatedUser` unexpectedly reaches hub `IUser`"
+      "relation": "references",
+      "why": "peripheral node `IPage` unexpectedly reaches hub `IMedia`"
+    },
+    {
+      "source": "EditUserPage()",
+      "target": "getCurrentSession()",
+      "source_files": [
+        "src/app/administration/utilisateurs/[id]/page.tsx",
+        "src/services/session.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `EditUserPage()` unexpectedly reaches hub `getCurrentSession()`"
+    },
+    {
+      "source": "AdministrationUsersPage()",
+      "target": "getCurrentSession()",
+      "source_files": [
+        "src/app/administration/utilisateurs/page.tsx",
+        "src/services/session.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `AdministrationUsersPage()` unexpectedly reaches hub `getCurrentSession()`"
     }
   ],
   "tokens": {

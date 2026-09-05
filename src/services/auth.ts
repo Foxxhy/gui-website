@@ -16,7 +16,16 @@ export const authService = {
     },
     canManage: (role: IRole, area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features' | 'analytics') => {
         if (role === IRole.BLOCKED) return false
-        if (area === 'users') return role === IRole.ADMIN
+        if (area === 'users' || area === 'features') return role === IRole.ADMIN
         return role === IRole.ADMIN || role === IRole.EDITOR
+    },
+    canPerform: (
+        role: IRole,
+        area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features' | 'analytics',
+        operation: string
+    ) => {
+        if (!authService.canManage(role, area)) return false
+        if (area === 'features' || area === 'users') return role === IRole.ADMIN
+        return operation.trim().length > 0 && operation.length <= 80
     },
 }

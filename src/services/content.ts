@@ -7,12 +7,40 @@ import {
     type IArticleQuery,
     type IPage,
 } from '@/types'
+import { VALIDATION_LIMITS, fieldErrors, isValidSlug, normalizeSlug } from './validation'
 
 const simulatedResult = <T>(message: string, data?: T): IActionResult<T> => ({
     success: true,
     message: `${message} La simulation ne conserve pas cette modification.`,
     data,
 })
+
+const validateArticle = (values: Partial<IArticle>): IActionResult<Partial<IArticle>> | undefined => {
+    const slug = normalizeSlug(values.slug)
+    const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
+    const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
+    const errors = fieldErrors(
+        ['title', !rawTitle ? 'Le titre est obligatoire.' : rawTitle.length > VALIDATION_LIMITS.title ? 'Le titre est trop long.' : undefined],
+        ['slug', !isValidSlug(slug) ? 'Le slug est invalide.' : undefined],
+        ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > VALIDATION_LIMITS.content ? 'Le contenu est trop long.' : undefined],
+        ['status', values.status && !Object.values(IStatus).includes(values.status) ? 'Le statut est invalide.' : undefined],
+    )
+    if (articles.some((article) => article.slug === slug && article.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
+    return Object.keys(errors).length ? { success: false, message: 'L’article contient des erreurs.', errors } : undefined
+}
+
+const validatePage = (values: Partial<IPage>): IActionResult<Partial<IPage>> | undefined => {
+    const slug = normalizeSlug(values.slug)
+    const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
+    const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
+    const errors = fieldErrors(
+        ['title', !rawTitle ? 'Le titre est obligatoire.' : rawTitle.length > VALIDATION_LIMITS.title ? 'Le titre est trop long.' : undefined],
+        ['slug', !isValidSlug(slug) ? 'Le slug est invalide.' : undefined],
+        ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > VALIDATION_LIMITS.content ? 'Le contenu est trop long.' : undefined],
+    )
+    if (pages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
+    return Object.keys(errors).length ? { success: false, message: 'La page contient des erreurs.', errors } : undefined
+}
 
 export const contentService = {
     getPublishedArticles: async (): Promise<IArticle[]> =>
@@ -70,9 +98,8 @@ export const contentService = {
     simulateArticleMutation: async (
         message: string,
         values: Partial<IArticle>
-    ): Promise<IActionResult<Partial<IArticle>>> => simulatedResult(message, values),
+    ): Promise<IActionResult<Partial<IArticle>>> => validateArticle(values) ?? simulatedResult(message, values),
     simulatePageMutation: async (
         values: Partial<IPage>
-    ): Promise<IActionResult<Partial<IPage>>> =>
-        simulatedResult('Page enregistrée.', values),
+    ): Promise<IActionResult<Partial<IPage>>> => validatePage(values) ?? simulatedResult('Page enregistrée.', values),
 }

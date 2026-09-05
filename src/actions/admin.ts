@@ -16,7 +16,7 @@ export const submitAdminMutation = async (
     const operation = String(formData.get('operation') ?? 'modifiée')
     const session = await getCurrentSession()
 
-    if (!session || !areas.includes(area) || !authService.canManage(session.user.role, area)) {
+    if (!session || !areas.includes(area) || !authService.canPerform(session.user.role, area, operation)) {
         return { success: false, message: 'Vous n’êtes pas autorisé à effectuer cette opération.' }
     }
 

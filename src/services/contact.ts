@@ -1,13 +1,12 @@
 import { contactFormConfiguration } from '@/mocks'
 import { analyticsService } from './analytics'
+import { VALIDATION_LIMITS, isValidEmail, toTrimmedString } from './validation'
 import type {
     IActionResult,
     IContactField,
     IContactFormConfiguration,
     IFieldErrors,
 } from '@/types'
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const sortedFields = (fields: IContactField[]) =>
     [...fields].sort((first, second) => first.order - second.order)
@@ -21,13 +20,20 @@ export const contactService = {
         const errors: IFieldErrors = {}
 
         for (const field of contactFormConfiguration.fields) {
-            const value = String(formData.get(field.technicalName) ?? '').trim()
+            const limit = field.type === 'textarea' ? VALIDATION_LIMITS.message : VALIDATION_LIMITS.name
+            const rawValue = formData.get(field.technicalName)
+            const value = toTrimmedString(rawValue, limit)
+            if (typeof rawValue !== 'string') {
+                errors[field.technicalName] = 'Valeur invalide.'
+                continue
+            }
             if (field.required && !value) {
                 errors[field.technicalName] = 'Ce champ est obligatoire.'
             }
-            if (field.type === 'email' && value && !emailPattern.test(value)) {
+            if (field.type === 'email' && value && !isValidEmail(value)) {
                 errors[field.technicalName] = 'Veuillez saisir une adresse e-mail valide.'
             }
+            if (rawValue.length > limit) errors[field.technicalName] = 'Ce champ est trop long.'
             if (
                 field.type === 'select' &&
                 value &&

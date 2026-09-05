@@ -1,17 +1,21 @@
 import { articles, tags } from '@/mocks'
 import type { IActionResult, IFieldErrors, ITag } from '@/types'
+import { VALIDATION_LIMITS, fieldErrors, isValidSlug, normalizeSlug, toTrimmedString } from './validation'
 
 type TagInput = Pick<ITag, 'name' | 'slug' | 'style'> & Pick<ITag, 'description'>
 
 const validate = (values: Partial<TagInput>, currentId?: string): IFieldErrors => {
-    const errors: IFieldErrors = {}
-    const name = String(values.name ?? '').trim()
-    const slug = String(values.slug ?? '').trim()
-    const style = String(values.style ?? '').trim()
-
-    if (!name) errors.name = 'Le nom est obligatoire.'
-    if (!slug) errors.slug = 'Le slug est obligatoire.'
-    if (!style) errors.style = 'Le style est obligatoire.'
+    const rawName = typeof values.name === 'string' ? values.name.trim() : ''
+    const rawDescription = typeof values.description === 'string' ? values.description.trim() : ''
+    const name = toTrimmedString(values.name, VALIDATION_LIMITS.name)
+    const slug = normalizeSlug(values.slug)
+    const style = toTrimmedString(values.style, 32)
+    const errors = fieldErrors(
+        ['name', !name ? 'Le nom est obligatoire.' : rawName.length > VALIDATION_LIMITS.name ? 'Le nom est trop long.' : undefined],
+        ['slug', !slug ? 'Le slug est obligatoire.' : !isValidSlug(slug) ? 'Le slug contient des caractères invalides.' : undefined],
+        ['style', !['green', 'blue', 'purple', 'red', 'yellow'].includes(style) ? 'Le style est invalide.' : undefined],
+        ['description', rawDescription.length > VALIDATION_LIMITS.description ? 'La description est trop longue.' : undefined],
+    )
     if (slug && tags.some((tag) => tag.slug === slug && tag.id !== currentId)) {
         errors.slug = 'Ce slug est déjà utilisé.'
     }
@@ -35,10 +39,10 @@ export const tagService = {
         }
         const tag: ITag = {
             id: `tag-${Date.now()}`,
-            name: String(values.name).trim(),
-            slug: String(values.slug).trim(),
-            style: String(values.style).trim(),
-            description: String(values.description ?? '').trim() || undefined,
+            name: toTrimmedString(values.name, VALIDATION_LIMITS.name),
+            slug: normalizeSlug(values.slug),
+            style: toTrimmedString(values.style, 32),
+            description: toTrimmedString(values.description, VALIDATION_LIMITS.description) || undefined,
         }
         tags.push(tag)
         return result('Tag créé.', tag)
@@ -51,10 +55,10 @@ export const tagService = {
             return { success: false, message: 'Le tag contient des erreurs.', errors }
         }
         Object.assign(tag, {
-            name: String(values.name).trim(),
-            slug: String(values.slug).trim(),
-            style: String(values.style).trim(),
-            description: String(values.description ?? '').trim() || undefined,
+            name: toTrimmedString(values.name, VALIDATION_LIMITS.name),
+            slug: normalizeSlug(values.slug),
+            style: toTrimmedString(values.style, 32),
+            description: toTrimmedString(values.description, VALIDATION_LIMITS.description) || undefined,
         })
         return result('Tag modifié.', tag)
     },
