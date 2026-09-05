@@ -1,0 +1,60 @@
+import Link from 'next/link'
+import Image from 'next/image'
+import type { IArticle, IPageSection } from '@/types'
+
+export const ArticleTags = ({ tags }: Pick<IArticle, 'tags'>) => tags?.length ? <p>Tags : {tags.map((tag) => <span key={tag.id} className="tag" data-tag-style={tag.style}>[{tag.name}] </span>)}</p> : null
+
+export const PublicNavigation = () => (
+    <nav aria-label="Navigation principale">
+        <ul>
+            <li><Link href="/">Accueil</Link></li>
+            <li><Link href="/articles">Articles</Link></li>
+            <li><Link href="/association">L’association</Link></li>
+            <li><Link href="/contact">Contact</Link></li>
+            <li><Link href="/connexion">Connexion</Link></li>
+        </ul>
+    </nav>
+)
+
+export const ArticleList = ({ articles }: { articles: IArticle[] }) => (
+    <ul>
+        {articles.map((article) => (
+            <li key={article.id}>
+                <article>
+                    <h2><Link href={`/articles/${article.slug}`}>{article.title}</Link></h2>
+                    {article.description && <p>{article.description}</p>}
+                    {article.cover && <Image src={article.cover.url} alt={article.cover.alt} width={article.cover.width ?? 600} height={article.cover.height ?? 400} />}
+                    <p>Catégorie : {article.category}</p>
+                    <ArticleTags tags={article.tags} />
+                    {article.author && <p>Auteur : {article.author.pseudonym}</p>}
+                    {article.publishedAt && <p>Publié le : {new Date(article.publishedAt).toLocaleDateString('fr-FR')}</p>}
+                    <Link href={`/articles/${article.slug}`}>Lire l’article</Link>
+                </article>
+            </li>
+        ))}
+    </ul>
+)
+
+export const PageSections = ({
+    sections,
+    featuredArticles = [],
+}: {
+    sections: IPageSection[]
+    featuredArticles?: IArticle[]
+}) => (
+    <>
+        {[...sections].sort((first, second) => first.order - second.order).map((section) => {
+            if (section.type === 'hero') {
+                return <header key={section.id}><h1>{section.title}</h1>{section.content && <p>{section.content}</p>}</header>
+            }
+            if (section.type === 'text') {
+                return <section key={section.id}><h2>{section.title}</h2><p>{section.content}</p></section>
+            }
+            if (section.type === 'featured-articles') {
+                const selected = featuredArticles.filter((article) => section.articleSlugs.includes(article.slug))
+                return <section key={section.id}><h2>{section.title}</h2><ArticleList articles={selected} /></section>
+            }
+            return <section key={section.id}><h2>{section.title}</h2>{section.content && <p>{section.content}</p>}<Link href={section.href}>{section.label}</Link></section>
+        })}
+    </>
+)

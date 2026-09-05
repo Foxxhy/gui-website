@@ -1,0 +1,16 @@
+.admin-editor {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.admin-preview {
+	border: 1px solid currentColor;
+	padding: 1rem;
+}
+
+.admin-preview__header {
+	align-items: center;
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
