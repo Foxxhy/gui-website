@@ -1,4 +1,5 @@
 import { contactFormConfiguration } from '@/mocks'
+import { analyticsService } from './analytics'
 import type {
     IActionResult,
     IContactField,
@@ -40,10 +41,12 @@ export const contactService = {
             return { success: false, message: 'Le formulaire contient des erreurs.', errors }
         }
 
-        return {
+        const result = {
             success: true,
             message: 'Votre message a été enregistré par la simulation. Aucun e-mail n’a été envoyé.',
         }
+        analyticsService.trackEvent('contact-submission', '/contact')
+        return result
     },
     simulateConfigurationMutation: async (): Promise<IActionResult> => ({
         success: true,

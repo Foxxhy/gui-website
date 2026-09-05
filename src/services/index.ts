@@ -1,4 +1,5 @@
 export * from './auth'
+export * from './analytics'
 export * from './contact'
 export * from './content'
 export * from './features'

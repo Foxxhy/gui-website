@@ -1,4 +1,5 @@
 import { PageSections, PublicNavigation } from '@/components'
+import { AnalyticsTracker } from '@/analytics/AnalyticsTracker'
 import { contentService, featureService } from '@/services'
 import { notFound } from 'next/navigation'
 
@@ -8,5 +9,5 @@ export default async function AssociationPage() {
         featureService.getFlags(),
     ])
     if (!page) notFound()
-    return <><PublicNavigation features={features} /><main><PageSections sections={page.sections} features={features} /></main></>
+    return <><AnalyticsTracker path="/association" /><PublicNavigation features={features} /><main><PageSections sections={page.sections} features={features} /></main></>
 }

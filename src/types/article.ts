@@ -19,6 +19,20 @@ export interface IFilter {
     type: ICategory
 }
 
+export interface IArticleQuery {
+    search?: string
+    tagSlugs?: string[]
+    page: number
+    limit: number
+}
+
+export interface IArticlePagination {
+    articles: IArticle[]
+    total: number
+    page: number
+    totalPages: number
+}
+
 export interface IArticle {
     id: string
     title: string

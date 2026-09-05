@@ -1,4 +1,5 @@
 import { PageSections, PublicNavigation } from '@/components'
+import { AnalyticsTracker } from '@/analytics/AnalyticsTracker'
 import { contentService, featureService } from '@/services'
 import { notFound } from 'next/navigation'
 
@@ -15,6 +16,7 @@ export default async function Home() {
 
     return (
         <>
+            <AnalyticsTracker path="/" />
             <PublicNavigation features={features} />
             <main><PageSections sections={page.sections} featuredArticles={articles} features={features} /></main>
         </>

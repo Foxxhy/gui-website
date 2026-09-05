@@ -36,6 +36,9 @@ export const appConfig = {
         login: '/connexion',
         administration: '/administration',
     },
+    articles: {
+        pageSize: positiveIntegerEnvOrDefault('ARTICLES_PAGE_SIZE', 10),
+    },
     session: {
         cookieName: envOrDefault('SESSION_COOKIE_NAME', DEFAULT_SESSION_COOKIE_NAME),
         cookieOptions: {
