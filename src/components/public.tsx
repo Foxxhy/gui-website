@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import type { IArticle, IPageSection } from '@/types'
+import type { IArticle, IContactField, IPageSection } from '@/types'
 
 export const ArticleTags = ({ tags }: Pick<IArticle, 'tags'>) => tags?.length ? <p>Tags : {tags.map((tag) => <span key={tag.id} className="tag" data-tag-style={tag.style}>[{tag.name}] </span>)}</p> : null
 
@@ -34,6 +34,14 @@ export const ArticleList = ({ articles }: { articles: IArticle[] }) => (
         ))}
     </ul>
 )
+
+export const ContactField = ({ field, disabled = false }: { field: IContactField; disabled?: boolean }) => {
+    const id = disabled ? `preview-${field.technicalName}` : field.technicalName
+    const label = <label htmlFor={id}>{field.label}{field.required ? ' *' : ''}</label>
+    const common = { id, name: disabled ? undefined : field.technicalName, required: field.required, placeholder: field.placeholder, disabled }
+
+    return <p>{label}<br />{field.type === 'textarea' ? <textarea {...common} /> : field.type === 'select' ? <select {...common} defaultValue=""><option value="" disabled>Choisir une option</option>{field.options?.map((option) => <option key={option} value={option}>{option}</option>)}</select> : <input {...common} type={field.type} />}{field.helpText && <small>{field.helpText}</small>}</p>
+}
 
 export const PageSections = ({
     sections,

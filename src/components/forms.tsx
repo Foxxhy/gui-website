@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from 'react'
 import { loginAction, submitAdminMutation, submitContactAction } from '@/actions'
-import { IContactFieldType, type IActionResult, type IContactFormConfiguration } from '@/types'
+import type { IActionResult, IContactFormConfiguration } from '@/types'
 import { AdminPreview, type IAdminPreview } from './preview'
+import { ContactField } from './public'
 
 const initialState: IActionResult = { success: false, message: '' }
 
@@ -12,21 +13,10 @@ export const ContactForm = ({ configuration }: { configuration: IContactFormConf
     return (
         <form action={action}>
             {configuration.fields.map((field) => (
-                <p key={field.id}>
-                    <label htmlFor={field.technicalName}>{field.label}{field.required ? ' *' : ''}</label><br />
-                    {field.type === IContactFieldType.TEXTAREA ? (
-                        <textarea id={field.technicalName} name={field.technicalName} required={field.required} placeholder={field.placeholder} />
-                    ) : field.type === IContactFieldType.SELECT ? (
-                        <select id={field.technicalName} name={field.technicalName} required={field.required} defaultValue="">
-                            <option value="" disabled>Choisir une option</option>
-                            {field.options?.map((option) => <option key={option} value={option}>{option}</option>)}
-                        </select>
-                    ) : (
-                        <input id={field.technicalName} name={field.technicalName} type={field.type} required={field.required} placeholder={field.placeholder} />
-                    )}
-                    {field.helpText && <small>{field.helpText}</small>}
+                <div key={field.id}>
+                    <ContactField field={field} />
                     {state.errors?.[field.technicalName] && <span role="alert"> {state.errors[field.technicalName]}</span>}
-                </p>
+                </div>
             ))}
             <button type="submit" disabled={pending}>{pending ? 'Envoi en cours…' : 'Envoyer'}</button>
             {state.message && <p aria-live="polite" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
