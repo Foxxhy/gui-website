@@ -1,7 +1,8 @@
 import 'server-only'
 
 import { accounts, users } from '@/mocks'
-import { IRole, type IUser, type IUserCredentials, type IUserRepository } from '@/types'
+import { IRole, type IUser, type IUserCredentials } from '@/types'
+import type { IUserRepository } from '@/repositories/types'
 
 const toCredentials = (account: (typeof accounts)[number]): IUserCredentials => ({
     userId: account.user.id,
@@ -27,9 +28,31 @@ export const repositoryUserMock: IUserRepository = {
         account.passwordHash = passwordHash
         return true
     },
+    incrementSessionVersion: async (userId: string): Promise<number> => {
+        const user = users.find((candidate) => candidate.id === userId)
+        if (!user) return 0
+        user.sessionVersion += 1
+        user.updatedAt = new Date().toISOString()
+        return user.sessionVersion
+    },
     createUser: async (user) => {
         users.push(user)
         return user
+    },
+    createAccount: async (credentials) => {
+        const user = users.find((candidate) => candidate.id === credentials.userId)
+        if (!user) {
+            throw new Error('Utilisateur introuvable pour la création du compte.')
+        }
+        if (accounts.some((account) => account.login === credentials.login)) {
+            throw new Error('Cet identifiant est déjà utilisé.')
+        }
+        accounts.push({
+            user,
+            login: credentials.login,
+            passwordHash: credentials.passwordHash,
+        })
+        return credentials
     },
     updateUser: async (id, values) => {
         const user = users.find((candidate) => candidate.id === id)
