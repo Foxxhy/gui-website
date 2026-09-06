@@ -47,14 +47,14 @@ export const AdminSidebarNav = ({
     return (
         <Sidebar collapsible="offcanvas">
             <SidebarHeader className="border-b border-sidebar-border">
-                <div className="flex flex-col gap-3 px-2 py-2">
+                <div className="flex flex-col items-center gap-3 px-2 py-2">
                     <div
                         aria-hidden="true"
-                        className="flex size-10 items-center justify-center rounded-lg border border-pink-300 bg-pink-200 text-[10px] font-medium tracking-wide text-pink-900 uppercase"
+                        className="mx-auto flex size-10 items-center justify-center rounded-lg border border-pink-300 bg-pink-200 text-[10px] font-medium tracking-wide text-pink-900 uppercase"
                     >
                         Logo
                     </div>
-                    <div>
+                    <div className="text-center group-data-[collapsible=icon]:hidden">
                         <p className="font-heading text-sm font-semibold">{siteTitle}</p>
                         <p className="text-xs text-muted-foreground">Administration</p>
                     </div>
@@ -131,7 +131,7 @@ export const AdminSidebarNav = ({
                         {navigation.account.label}
                     </Button>
                     <form action={actionLogout}>
-                        <Button className="w-full" type="submit" variant="outline">
+                        <Button className="w-full" type="submit">
                             Se déconnecter
                         </Button>
                     </form>

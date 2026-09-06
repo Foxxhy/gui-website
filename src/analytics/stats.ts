@@ -6,7 +6,14 @@ import {
     type IAnalyticsPeriodRange,
     type IAnalyticsStats,
     type IAnalyticsTimelinePoint,
+    type IArticle,
+    type ICategory,
 } from '@/types'
+
+export interface IAnalyticsCategoryView {
+    category: ICategory
+    count: number
+}
 
 const periodLabels: Record<AnalyticsPeriod, string> = {
     today: 'Aujourd’hui',
@@ -88,6 +95,28 @@ export const analyticsComputeTimeline = (
             count: countEventsInRange(events, start, end),
         }
     })
+}
+
+export const analyticsComputeCategoryViews = (
+    articleStats: { articleId: string; count: number }[],
+    articles: Pick<IArticle, 'id' | 'category'>[]
+): IAnalyticsCategoryView[] => {
+    const categoryByArticleId = new Map(
+        articles
+            .filter((article) => article.category)
+            .map((article) => [article.id, article.category as ICategory])
+    )
+    const counts = new Map<ICategory, number>()
+
+    for (const { articleId, count } of articleStats) {
+        const category = categoryByArticleId.get(articleId)
+        if (!category) continue
+        counts.set(category, (counts.get(category) ?? 0) + count)
+    }
+
+    return [...counts.entries()]
+        .map(([category, count]) => ({ category, count }))
+        .sort((first, second) => second.count - first.count)
 }
 
 export const analyticsComputeStats = (

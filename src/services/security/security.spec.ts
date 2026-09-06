@@ -18,6 +18,10 @@ describe('security utilities', () => {
     it('creates a CSP containing the nonce and restrictive directives', () => {
         const csp = serviceCreateCsp('test-nonce', false)
         expect(csp).toContain("script-src 'self' 'nonce-test-nonce'")
+        expect(csp).toContain("style-src 'self' 'nonce-test-nonce'")
+        expect(csp).toContain("style-src-elem 'self' 'nonce-test-nonce'")
+        expect(csp).toContain("style-src-attr 'unsafe-inline'")
+        expect(csp).not.toContain("style-src 'self' 'nonce-test-nonce' 'unsafe-inline'")
         expect(csp).toContain("object-src 'none'")
         expect(csp).toContain("frame-ancestors 'none'")
     })
