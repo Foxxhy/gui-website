@@ -1,15 +1,23 @@
+import { PageSections, PublicBreadcrumb } from '@/components'
 import { AnalyticsTracker } from '@/analytics'
+import { serviceContent } from '@/services'
+import { notFound } from 'next/navigation'
 
-export default function DataManagementPage() {
+export default async function DataManagementPage() {
+    const page = await serviceContent.getPageBySlug('gestion-des-donnees')
+    if (!page) notFound()
+
     return (
         <>
             <AnalyticsTracker path="/gestion-des-donnees" />
-            <div className="space-y-4">
-                <h1 className="font-heading text-3xl font-semibold">Gestion des données</h1>
-                <p>
-                    Cette page présentera les informations relatives à la gestion de vos données
-                    personnelles. Le contenu définitif sera ajouté lors d’une étape ultérieure.
-                </p>
+            <div className="space-y-6">
+                <PublicBreadcrumb
+                    items={[
+                        { label: 'Accueil', href: '/' },
+                        { label: 'Gestion des données' },
+                    ]}
+                />
+                <PageSections sections={page.sections} />
             </div>
         </>
     )

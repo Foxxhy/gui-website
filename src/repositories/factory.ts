@@ -26,6 +26,7 @@ const createMongoRepositories = (): IRepositories => ({
     },
     pages: {
         findAll: async () => notImplemented('pages'),
+        findById: async () => notImplemented('pages'),
         findBySlug: async () => notImplemented('pages'),
         update: async () => notImplemented('pages'),
     },
@@ -52,6 +53,10 @@ const createMongoRepositories = (): IRepositories => ({
         updateFeatureFlag: async () => notImplemented('settings'),
         getContactFormConfiguration: async () => notImplemented('settings'),
         updateContactFormConfiguration: async () => notImplemented('settings'),
+        createContactField: async () => notImplemented('settings'),
+        updateContactField: async () => notImplemented('settings'),
+        deleteContactField: async () => notImplemented('settings'),
+        reorderContactField: async () => notImplemented('settings'),
     },
     analytics: {
         track: async () => notImplemented('analytics'),

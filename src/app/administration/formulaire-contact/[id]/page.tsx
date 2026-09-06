@@ -8,8 +8,10 @@ export default async function EditContactFieldPage({
     params,
 }: PageProps<'/administration/formulaire-contact/[id]'>) {
     const { id } = await params
-    const configuration = await serviceContact.getConfiguration()
-    const field = configuration.fields.find((candidate) => candidate.id === id)
+    const [configuration, field] = await Promise.all([
+        serviceContact.getConfiguration(),
+        serviceContact.getFieldById(id),
+    ])
     if (!field) notFound()
 
     return (

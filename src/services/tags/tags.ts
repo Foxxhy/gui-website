@@ -1,5 +1,5 @@
 import { getRepositories } from '@/repositories'
-import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError, serviceToTrimmedString } from '@/services/validation'
+import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceReadFormString, serviceRequiredError, serviceToTrimmedString } from '@/services/validation'
 import { TAG_STYLES, type IActionResult, type IFieldErrors, type ITag } from '@/types'
 
 type TagInput = Pick<ITag, 'name' | 'slug' | 'style'> & Pick<ITag, 'description'>
@@ -63,5 +63,22 @@ export const serviceTag = {
         if (!deleted) return { success: false, message: 'Tag introuvable.' }
         await getRepositories().tags.removeTagFromArticles(id)
         return { success: true, message: 'Tag supprimé et associations retirées.' }
+    },
+    mutateFromFormData: async (formData: FormData, operation: string): Promise<IActionResult<unknown>> => {
+        const rawStyle = serviceReadFormString(formData, 'style', 32)
+        const style = TAG_STYLES.includes(rawStyle as ITag['style']) ? rawStyle as ITag['style'] : 'green'
+        const tagValues = {
+            name: serviceReadFormString(formData, 'name', serviceValidationLimits.name),
+            slug: serviceReadFormString(formData, 'slug', serviceValidationLimits.slug),
+            style,
+            description: serviceReadFormString(formData, 'description', serviceValidationLimits.description),
+        }
+        const id = formData.get('id')
+        if (operation === 'supprimé') {
+            return await serviceTag.deleteTag(String(id ?? ''))
+        }
+        return id
+            ? await serviceTag.updateTag(String(id), tagValues)
+            : await serviceTag.createTag(tagValues)
     },
 }

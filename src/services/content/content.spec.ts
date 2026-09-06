@@ -35,6 +35,12 @@ describe('serviceContent', () => {
         expect(page?.sections.some((section) => section.id === 'data-contact-cta')).toBe(true)
     })
 
+    it('returns a page by id', async () => {
+        await expect(serviceContent.getPageById('page-gestion-donnees')).resolves.toMatchObject({
+            slug: 'gestion-des-donnees',
+        })
+    })
+
     it('updates a page including its sections', async () => {
         const page = pages.find((candidate) => candidate.id === 'page-gestion-donnees')
         expect(page).toBeDefined()
