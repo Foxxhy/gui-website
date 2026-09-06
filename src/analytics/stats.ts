@@ -46,8 +46,13 @@ export const analyticsFormatAnalyticsName = (name: string): AnalyticsEventType =
     return formatted
 }
 
+const toEventDate = (timestamp: string) => new Date(timestamp)
+
 const countEventsInRange = (events: IAnalyticsEvent[], start: Date, end: Date) =>
-    events.filter(({ timestamp }) => timestamp >= start && timestamp < end).length
+    events.filter(({ timestamp }) => {
+        const date = toEventDate(timestamp)
+        return date >= start && date < end
+    }).length
 
 export const analyticsComputeTimeline = (
     events: IAnalyticsEvent[],
@@ -125,9 +130,10 @@ export const analyticsComputeStats = (
     now = new Date()
 ): IAnalyticsStats => {
     const range = analyticsGetPeriodRange(period, now)
-    const filteredEvents = events.filter(
-        ({ timestamp }) => timestamp >= range.start && timestamp <= range.end
-    )
+    const filteredEvents = events.filter(({ timestamp }) => {
+        const date = toEventDate(timestamp)
+        return date >= range.start && date <= range.end
+    })
     const countBy = (selector: (event: IAnalyticsEvent) => string) => {
         const counts = new Map<string, number>()
         for (const event of filteredEvents) {

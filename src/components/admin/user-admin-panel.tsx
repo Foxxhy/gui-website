@@ -29,7 +29,7 @@ import {
 import { IRole, type IUser } from '@/types'
 import { ROLE_LABELS } from './role-permissions'
 
-const UserFormFields = ({ user }: { user?: IUser }) => (
+const UserFormFields = ({ user, showCredentials = false }: { user?: IUser; showCredentials?: boolean }) => (
     <>
         {user && <input name="id" type="hidden" value={user.id} />}
         <div className="space-y-2">
@@ -44,6 +44,18 @@ const UserFormFields = ({ user }: { user?: IUser }) => (
             <Label htmlFor="pseudonym">Pseudonyme</Label>
             <Input defaultValue={user?.pseudonym} id="pseudonym" name="pseudonym" required />
         </div>
+        {showCredentials && (
+            <>
+                <div className="space-y-2">
+                    <Label htmlFor="login">Identifiant de connexion</Label>
+                    <Input autoComplete="off" id="login" name="login" required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="password">Mot de passe initial</Label>
+                    <Input autoComplete="new-password" id="password" name="password" required type="password" />
+                </div>
+            </>
+        )}
         <div className="space-y-2">
             <Label htmlFor="role">Rôle</Label>
             <select
@@ -220,7 +232,7 @@ export const UserAdminPanel = ({
                             submitLabel="Sauvegarder"
                         >
                             <div className="space-y-4">
-                                <UserFormFields user={mode === 'edit' ? selectedUser : undefined} />
+                                <UserFormFields showCredentials={mode === 'create'} user={mode === 'edit' ? selectedUser : undefined} />
                             </div>
                         </AdminMutationForm>
                     </div>

@@ -1,53 +1,42 @@
-# Schéma MongoDB initial
+# Schéma MongoDB
 
 Base de données sélectionnée via `MONGODB_DB_NAME` (ex. `gui-website-dev`, `gui-website-recette`, `gui-website-prod`).
 
 Les documents reprennent les champs des interfaces `I*` de `src/types/`. Le champ applicatif `id` est utilisé comme `_id` (string) pour rester aligné avec les mocks.
 
-## Collections prévues
+Référence décisionnelle : [docs/decisions-mongodb-schema.md](../../docs/decisions-mongodb-schema.md).
 
-### `users`
+## Collections
 
-Source : `IUser`
-
-- Pas de mots de passe (l’authentification reste mockée dans le POC).
-- Index suggéré (migration future) : `email` (unique).
-
-### `articles`
-
-Source : `IArticle`
-
-- Conserver la dénormalisation actuelle (`tags`, `author` embarqués) comme dans les mocks.
-- Index suggéré (migration future) : `slug` (unique), `status`.
-
-### `tags`
-
-Source : `ITag`
-
-- Index suggéré (migration future) : `slug` (unique).
-
-### `settings`
-
-Documents clé/valeur :
-
-| `_id` | Contenu |
+| Collection | Rôle |
 | --- | --- |
-| `featureFlags` | `IFeatureFlags` |
-| `contactForm` | `IContactFormConfiguration` |
+| `users` | Profils utilisateur (`IUser`, sans credentials) |
+| `accounts` | Identifiants de connexion (`login`, `passwordHash`, `userId`) |
+| `articles` | Contenus éditoriaux (`authorId`, `tagIds[]` — populate à la lecture) |
+| `tags` | Taxonomie |
+| `pages` | Pages configurables (sections typées) |
+| `contactFormConfigurations` | Document `_id: contactForm` — `IContactFormConfiguration` |
+| `contactSubmissions` | Messages reçus (append-only) |
+| `featureFlags` | Document `_id: featureFlags` — `IFeatureFlags` |
+| `analyticsEvents` | Événements analytics (append-only, `timestamp` en BSON Date) |
 
-### `analytics_events`
+## Stratégie références vs embeds
 
-Source : `IAnalyticsEvent`
+| Relation | Stockage MongoDB | Lecture repository |
+| --- | --- | --- |
+| Article → auteur | `authorId` | Populate `IUser` dans `IArticle.author` |
+| Article → tags | `tagIds[]` | Populate `ITag[]` dans `IArticle.tags` |
+| Page → articles featured | `articleSlugs[]` dans la section | Inchangé côté UI |
 
-- `timestamp` stocké en `Date` BSON.
-- Index suggéré (migration future) : `timestamp`, `type`.
+## Indexes suggérés
 
-### `pages` (hors périmètre de migration immédiate)
-
-Source : `IPage`
-
-- Documentée pour les futures US ; collection créée uniquement lors de la migration des pages.
+- `accounts.login` — unique
+- `articles.slug` — unique
+- `articles` — `{ status: 1, publishedAt: -1 }`
+- `pages.slug` — unique
+- `tags.slug` — unique
+- `analyticsEvents.timestamp` — index temporel
 
 ## Création des collections
 
-MongoDB crée les collections à la première insertion. Aucune collection ni donnée n’est initialisée dans cette US.
+MongoDB crée les collections à la première insertion. Aucune donnée n’est initialisée automatiquement.

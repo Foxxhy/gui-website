@@ -1,15 +1,7 @@
 import { getRepositories } from '@/repositories'
 import { validatePageSections } from '@/services/content/page-sections'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError } from '@/services/validation'
-import {
-    IStatus,
-    type IActionResult,
-    type IArticle,
-    type IArticlePagination,
-    type IArticleQuery,
-    type IPage,
-    type IUser,
-} from '@/types'
+import { IStatus, type IActionResult, type IArticle, type IArticlePagination, type IArticleQuery, type IPage, type IUser, ICategory } from '@/types'
 
 const validateArticle = async (values: Partial<IArticle>): Promise<IActionResult<Partial<IArticle>> | undefined> => {
     const allArticles = await getRepositories().articles.findAll()
@@ -101,7 +93,7 @@ export const serviceContent = {
             slug: serviceNormalizeSlug(values.slug),
             description: typeof values.description === 'string' ? values.description.trim() : undefined,
             content: String(values.content).trim(),
-            category: values.category,
+            category: values.category ?? ICategory.ACTUALITES,
             tags: values.tags,
             author,
             status: values.status ?? IStatus.DRAFT,
@@ -126,6 +118,7 @@ export const serviceContent = {
             description: typeof values.description === 'string' ? values.description.trim() : existing.description,
             content: typeof values.content === 'string' ? values.content.trim() : existing.content,
             status: values.status ?? existing.status,
+            category: values.category ?? existing.category,
             tags: values.tags ?? existing.tags,
             author: author ?? existing.author,
             publishedAt:

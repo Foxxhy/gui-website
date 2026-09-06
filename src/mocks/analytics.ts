@@ -4,7 +4,7 @@ const daysAgo = (days: number, hour: number) => {
     const date = new Date('2026-09-06T00:00:00.000Z')
     date.setUTCDate(date.getUTCDate() - days)
     date.setUTCHours(hour)
-    return date
+    return date.toISOString()
 }
 
 export const analyticsEvents: IAnalyticsEvent[] = [

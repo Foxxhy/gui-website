@@ -10,15 +10,25 @@ import {
     serviceTag,
     serviceUser,
 } from '@/services'
-import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
-import { IStatus, MUTATION_AREAS, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
+import { parsePageSectionsFromFormData } from '@/lib/page-sections'
+import {
+    ICategory,
+    IStatus,
+    isAdminOperation,
+    MUTATION_AREAS,
+    TAG_STYLES,
+    type IAdminOperation,
+    type IActionResult,
+    type ITagStyle,
+} from '@/types'
 
 export const actionSubmitAdminMutation = async (
     _previousState: IActionResult | undefined,
     formData: FormData
 ): Promise<IActionResult> => {
     const area = String(formData.get('area')) as (typeof MUTATION_AREAS)[number]
-    const operation = String(formData.get('operation') ?? 'modifiée')
+    const rawOperation = String(formData.get('operation') ?? 'modifiée')
+    const operation: IAdminOperation = isAdminOperation(rawOperation) ? rawOperation : 'modifiée'
     const session = await serviceGetCurrentSession()
 
     if (!session || !MUTATION_AREAS.includes(area) || !serviceAuth.canPerform(session.user.role, area, operation)) {
@@ -34,7 +44,11 @@ export const actionSubmitAdminMutation = async (
         const status = rawStatus && Object.values(IStatus).includes(rawStatus as IStatus)
             ? rawStatus as IStatus
             : undefined
-        const articleValues = { ...values, tags, status }
+        const rawCategory = typeof values.category === 'string' ? values.category : undefined
+        const category = rawCategory && Object.values(ICategory).includes(rawCategory as ICategory)
+            ? rawCategory as ICategory
+            : undefined
+        const articleValues = { ...values, tags, status, category }
         const result = formData.get('id')
             ? await serviceContent.updateArticle(String(formData.get('id')), articleValues, session.user)
             : await serviceContent.createArticle(articleValues, session.user)
@@ -75,9 +89,14 @@ export const actionSubmitAdminMutation = async (
             const result = await serviceUser.deleteUser(String(formData.get('id') ?? ''))
             return { success: result.success, message: result.message, errors: result.errors }
         }
+        const userValues = {
+            ...values,
+            login: String(formData.get('login') ?? ''),
+            password: typeof formData.get('password') === 'string' ? formData.get('password') as string : '',
+        }
         const result = formData.get('id')
             ? await serviceUser.updateUser(String(formData.get('id')), values)
-            : await serviceUser.createUser(values)
+            : await serviceUser.createUser(userValues)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'features') {
@@ -89,6 +108,24 @@ export const actionSubmitAdminMutation = async (
             revalidatePath('/articles/[slug]', 'page')
             revalidatePath('/contact')
         }
+        return { success: result.success, message: result.message, errors: result.errors }
+    }
+    if (operation === 'champ ajouté') {
+        const result = await serviceContact.addField(formData)
+        return { success: result.success, message: result.message, errors: result.errors }
+    }
+    if (operation === 'champ modifié') {
+        const result = await serviceContact.updateField(formData)
+        return { success: result.success, message: result.message, errors: result.errors }
+    }
+    if (operation === 'champ supprimé') {
+        const result = await serviceContact.deleteField(String(formData.get('id') ?? ''))
+        return { success: result.success, message: result.message, errors: result.errors }
+    }
+    if (operation === 'ordre modifié') {
+        const move = String(formData.get('move') ?? '')
+        const direction = move === 'up' ? 'up' : 'down'
+        const result = await serviceContact.moveField(String(formData.get('id') ?? ''), direction)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     const result = await serviceContact.updateConfiguration(values)

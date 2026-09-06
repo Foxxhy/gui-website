@@ -1,4 +1,4 @@
-import type { AnalyticsPeriod, IAnalyticsEvent } from '@/types'
+import type { AnalyticsEventType, AnalyticsPeriod, IAnalyticsEvent } from '@/types'
 
 import { analyticsFormatAnalyticsName } from './stats'
 import { getRepositories } from '@/repositories'
@@ -19,7 +19,7 @@ export const analyticsTrack = async ({
         type,
         path: path || '/',
         ...(articleId ? { articleId } : {}),
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
     }
     return getRepositories().analytics.track(event)
 }
@@ -28,7 +28,7 @@ export const analyticsGetStats = async (period: AnalyticsPeriod) =>
     getRepositories().analytics.getStats(period)
 
 export const serviceAnalytics = {
-    trackEvent: async (type: string, path: string, articleId?: string): Promise<IAnalyticsEvent> =>
+    trackEvent: async (type: AnalyticsEventType, path: string, articleId?: string): Promise<IAnalyticsEvent> =>
         analyticsTrack({
             type: analyticsFormatAnalyticsName(type),
             path,

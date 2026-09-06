@@ -8,7 +8,7 @@ export interface IAnalyticsEvent {
     type: AnalyticsEventType
     path: string
     articleId?: string
-    timestamp: Date
+    timestamp: string
 }
 
 export interface IAnalyticsPeriodRange {

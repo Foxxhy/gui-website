@@ -7,7 +7,7 @@ describe('serviceUser', () => {
         await expect(serviceUser.getUsers()).resolves.toBe(users)
     })
 
-    it('creates a valid user', async () => {
+    it('creates a valid user with credentials', async () => {
         const initialLength = users.length
         await expect(
             serviceUser.createUser({
@@ -15,6 +15,8 @@ describe('serviceUser', () => {
                 pseudonym: 'Nouveau pseudonyme',
                 email: 'nouveau@association.test',
                 role: IRole.EDITOR,
+                login: 'nouveau',
+                password: 'motdepasse',
             })
         ).resolves.toMatchObject({ success: true })
         expect(users.length).toBe(initialLength + 1)

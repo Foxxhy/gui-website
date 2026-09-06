@@ -20,7 +20,7 @@ export const servicePassword = {
     changeOwnPassword: async (
         actorUserId: string,
         input: IChangeOwnPasswordInput
-    ): Promise<IActionResult> => {
+    ): Promise<IActionResult & { sessionVersion?: number }> => {
         const errors = serviceValidateNewPassword(
             input.newPassword,
             input.confirmPassword,
@@ -51,13 +51,14 @@ export const servicePassword = {
             return { success: false, message: 'Impossible de mettre à jour le mot de passe.' }
         }
 
-        return { success: true, message: 'Votre mot de passe a été modifié.' }
+        const sessionVersion = await getRepositories().users.incrementSessionVersion(actorUserId)
+        return { success: true, message: 'Votre mot de passe a été modifié.', sessionVersion }
     },
     changeUserPasswordByAdmin: async (
         actorRole: IRole,
         targetUserId: string,
         input: IChangeUserPasswordByAdminInput
-    ): Promise<IActionResult> => {
+    ): Promise<IActionResult & { sessionVersion?: number }> => {
         if (actorRole !== IRole.ADMIN) {
             return { success: false, message: 'Vous n’êtes pas autorisé à effectuer cette opération.' }
         }
@@ -83,6 +84,7 @@ export const servicePassword = {
             return { success: false, message: 'Impossible de mettre à jour le mot de passe.' }
         }
 
-        return { success: true, message: `Le mot de passe de ${user.name} a été modifié.` }
+        const sessionVersion = await getRepositories().users.incrementSessionVersion(targetUserId)
+        return { success: true, message: `Le mot de passe de ${user.name} a été modifié.`, sessionVersion }
     },
 }

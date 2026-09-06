@@ -10,7 +10,7 @@ jest.mock('next/headers', () => ({
 
 describe('serviceGetCurrentSession', () => {
     it('returns the session for a valid token', async () => {
-        const token = createSessionToken('user-admin')
+        const token = createSessionToken('user-admin', 0)
         const getSessionFromToken = jest.spyOn(serviceAuth, 'getSessionFromToken')
         ;(cookies as jest.Mock).mockResolvedValue({
             get: (name: string) =>

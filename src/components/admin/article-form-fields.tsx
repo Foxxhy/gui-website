@@ -2,13 +2,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { IStatus, type IArticle, type ITag } from '@/types'
+import { ICategory, IStatus, type IArticle, type ITag } from '@/types'
 
 export const ArticleFormFields = ({
     article,
     tags,
 }: {
-    article?: Pick<IArticle, 'title' | 'slug' | 'description' | 'content' | 'status' | 'tags'>
+    article?: Pick<IArticle, 'title' | 'slug' | 'description' | 'content' | 'status' | 'tags' | 'category'>
     tags: ITag[]
 }) => {
     const selectedTagIds = new Set(article?.tags?.map((tag) => tag.id))
@@ -36,6 +36,15 @@ export const ArticleFormFields = ({
                     name="content"
                     required
                 />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="category">Catégorie</Label>
+                <Select defaultValue={article?.category ?? ICategory.ACTUALITES} id="category" name="category">
+                    <option value={ICategory.ACTUALITES}>Actualités</option>
+                    <option value={ICategory.EVENEMENTS}>Événements</option>
+                    <option value={ICategory.PROJETS}>Projets</option>
+                    <option value={ICategory.VIE_ASSOCIATIVE}>Vie associative</option>
+                </Select>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="status">Statut</Label>

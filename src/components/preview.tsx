@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
+import { parsePageSectionsFromFormData } from '@/lib/page-sections'
 import { IContactFieldType, IStatus, TAG_STYLES, type IArticle, type IContactField, type IContactFormConfiguration, type IPage, type ITag, type ITagStyle } from '@/types'
 import { ArticleList, ContactField, PageSections } from './public/content'
 import { TagBadge } from './public/tag-badge'

@@ -1,9 +1,12 @@
 export const mongoCollections = {
     users: 'users',
+    accounts: 'accounts',
     articles: 'articles',
     tags: 'tags',
-    settings: 'settings',
-    analyticsEvents: 'analytics_events',
+    featureFlags: 'featureFlags',
+    contactFormConfigurations: 'contactFormConfigurations',
+    contactSubmissions: 'contactSubmissions',
+    analyticsEvents: 'analyticsEvents',
     pages: 'pages',
 } as const
 
