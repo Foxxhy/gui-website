@@ -24,8 +24,10 @@ Avant d'écrire du code Next.js, respecter le bloc auto-généré ci-dessus : co
 - `src/components/` : composants React réutilisables. `forms.tsx` contient les formulaires public/admin ; `public.tsx` contient les éléments de rendu public.
 - `src/types/` : contrats TypeScript. Les interfaces sont nommées avec le préfixe `I`; les index exportent les contrats publics.
 - `src/mocks/data.ts` : graines en mémoire pour utilisateurs, comptes, contenus, pages et configuration de contact. `src/mocks/index.ts` est le point d'accès.
-- `src/services/` : frontière de logique métier et de données (`authService`, `contentService`, `contactService`, `userService`, session). Toute future API ou base de données doit être branchée derrière ces services, pas directement depuis une page ou un composant.
-- `src/actions/` : Server Actions pour l'authentification, les mutations d'administration et l'envoi du contact. Les index de répertoire sont les points d'import privilégiés quand ils exposent le symbole nécessaire.
+- `src/services/` : frontière de logique métier et de données (`serviceAuth`, `serviceContent`, `serviceContact`, `serviceUser`, session). Chaque module est un dossier (`module.ts`, `module.spec.ts`, `index.ts`). Toute future API ou base de données doit être branchée derrière ces services, pas directement depuis une page ou un composant.
+- `src/actions/` : Server Actions pour l'authentification, les mutations d'administration et l'envoi du contact. Même convention dossier + `index` + spec ; les barrels `@/actions` / `@/services` restent les points d'import privilégiés.
+- `src/analytics/` : logique analytics canonique (`serviceAnalytics`, tracking, stats) et `AnalyticsTracker` client. `src/services/analytics/` réexporte uniquement le pont service.
+- `src/configs/` : configuration applicative (`app/`) avec la même convention dossier + index + spec.
 - `src/proxy.ts` : protection de navigation des routes d'administration.
 
 Flux habituel : types et mocks alimentent les services ; les actions orchestrent les mutations et autorisations ; les pages et composants affichent les résultats. Préserver cette séparation pour les nouvelles fonctionnalités.
@@ -34,9 +36,9 @@ Flux habituel : types et mocks alimentent les services ; les actions orchestrent
 
 Toutes les données sont mockées : il n'existe ni base de données ni persistance. Les méthodes de mutation simulent une réponse `IActionResult`; après rechargement, les graines initiales sont restaurées. Ne pas présenter une mutation comme durable sans ajouter explicitement une couche de persistance.
 
-La session est le cookie HTTP-only `association_poc_session`. `loginAction()` authentifie l'utilisateur, stocke son identifiant dans ce cookie et ne redirige que vers `/administration` ou l'URL d'administration fournie dans `returnTo`. `getCurrentSession()` relit le cookie côté serveur. `proxy()` redirige toute requête non authentifiée vers `/connexion` tout en conservant la destination demandée dans `returnTo`.
+La session est le cookie HTTP-only `association_poc_session`. `actionLogin()` authentifie l'utilisateur, stocke son identifiant dans ce cookie et ne redirige que vers `/administration` ou l'URL d'administration fournie dans `returnTo`. `serviceGetCurrentSession()` relit le cookie côté serveur. `proxy()` redirige toute requête non authentifiée vers `/connexion` tout en conservant la destination demandée dans `returnTo`.
 
-Les contrôles de `proxy()` ne suffisent pas : chaque mutation protégée doit relire la session et vérifier `authService.canManage()`, comme le fait `submitAdminMutation()`. Les rôles sont :
+Les contrôles de `proxy()` ne suffisent pas : chaque mutation protégée doit relire la session et vérifier `serviceAuth.canManage()`, comme le fait `actionSubmitAdminMutation()`. Les rôles sont :
 
 - `ADMIN` : tous les espaces, y compris la gestion des utilisateurs.
 - `EDITOR` : articles, pages et formulaire de contact, mais pas utilisateurs.
@@ -56,7 +58,8 @@ Comptes de démonstration : `admin` / `admin` et `editor` / `editor`. Le cookie 
 
 - `npm run dev` : démarre le serveur de développement Next.js et active le proxy.
 - `npm run lint` : vérifie le code avec Biome.
+- `npm test` : exécute les specs Jest (`*.spec.ts`).
 - `npm run build` : vérifie le build de production Next.js.
 - `npm run format` : reformate les fichiers avec Biome et modifie le répertoire de travail.
 
-Après une modification applicative, exécuter au minimum le lint ; lancer aussi le build lorsqu'elle touche au routage, aux composants, aux types, aux actions ou à la configuration. Aucune commande de test automatisé n'est définie actuellement.
+Après une modification applicative, exécuter au minimum le lint et les tests ; lancer aussi le build lorsqu'elle touche au routage, aux composants, aux types, aux actions ou à la configuration.

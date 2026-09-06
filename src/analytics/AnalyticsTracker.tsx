@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { trackAnalyticsEvent } from '@/actions'
+import { actionTrackAnalytics } from '@/actions'
 import type { AnalyticsEventType } from '@/types'
 
 export const AnalyticsTracker = ({
@@ -18,7 +18,7 @@ export const AnalyticsTracker = ({
     useEffect(() => {
         if (tracked.current) return
         tracked.current = true
-        void trackAnalyticsEvent({ type, path, articleId })
+        void actionTrackAnalytics({ type, path, articleId })
     }, [articleId, path, type])
 
     return null

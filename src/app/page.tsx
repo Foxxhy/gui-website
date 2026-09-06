@@ -1,15 +1,15 @@
 import { PageSections, PublicNavigation } from '@/components'
-import { AnalyticsTracker } from '@/analytics/AnalyticsTracker'
-import { contentService, featureService } from '@/services'
+import { AnalyticsTracker } from '@/analytics'
+import { serviceContent, serviceFeature } from '@/services'
 import { notFound } from 'next/navigation'
 
 export default async function Home() {
-    const features = await featureService.getFlags()
+    const features = await serviceFeature.getFlags()
     if (!features.home) notFound()
 
     const [page, articles] = await Promise.all([
-        contentService.getPageBySlug('accueil'),
-        features.articles ? contentService.getPublishedArticles() : Promise.resolve([]),
+        serviceContent.getPageBySlug('accueil'),
+        features.articles ? serviceContent.getPublishedArticles() : Promise.resolve([]),
     ])
 
     if (!page) return null

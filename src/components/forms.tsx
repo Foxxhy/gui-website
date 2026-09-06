@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { loginAction, submitAdminMutation, submitContactAction } from '@/actions'
+import { actionLogin, actionSubmitAdminMutation, actionSubmitContact } from '@/actions'
 import type { IActionResult, IContactFormConfiguration } from '@/types'
 import { AdminPreview, type IAdminPreview } from './preview'
 import { ContactField } from './public'
@@ -9,7 +9,7 @@ import { ContactField } from './public'
 const initialState: IActionResult = { success: false, message: '' }
 
 export const ContactForm = ({ configuration }: { configuration: IContactFormConfiguration }) => {
-    const [state, action, pending] = useActionState(submitContactAction, initialState)
+    const [state, action, pending] = useActionState(actionSubmitContact, initialState)
     return (
         <form action={action}>
             {configuration.fields.map((field) => (
@@ -25,7 +25,7 @@ export const ContactForm = ({ configuration }: { configuration: IContactFormConf
 }
 
 export const LoginForm = ({ returnTo }: { returnTo: string }) => {
-    const [state, action, pending] = useActionState(loginAction, initialState)
+    const [state, action, pending] = useActionState(actionLogin, initialState)
     return (
         <form action={action}>
             <input type="hidden" name="returnTo" value={returnTo} />
@@ -48,7 +48,7 @@ export const AdminMutationForm = ({
     children: React.ReactNode
     preview?: IAdminPreview
 }) => {
-    const [state, action, pending] = useActionState(submitAdminMutation, initialState)
+    const [state, action, pending] = useActionState(actionSubmitAdminMutation, initialState)
     const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [previewValues, setPreviewValues] = useState(() => new FormData())
     const updatePreview = (form: HTMLFormElement) => setPreviewValues(new FormData(form))

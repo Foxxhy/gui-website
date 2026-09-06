@@ -1,1 +1,1 @@
-export { appConfig, type IAppConfig } from './app'
+export { configApp, type IConfigApp } from './app'

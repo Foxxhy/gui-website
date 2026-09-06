@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "types": ["jest", "node"]
+    },
+    "include": [
+        "next-env.d.ts",
+        "src/**/*.spec.ts",
+        "src/**/*.spec.tsx",
+        "test/**/*.ts"
+    ],
+    "exclude": ["node_modules"]
+}

@@ -6,6 +6,9 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
+        "test": "jest --runInBand",
+        "test:watch": "jest --watch",
+        "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
         "lint": "biome lint",
         "format": "biome format --write"
     },
@@ -19,11 +22,14 @@
     "devDependencies": {
         "@biomejs/biome": "2.4.2",
         "@tailwindcss/postcss": "^4",
+        "@types/jest": "^30.0.0",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/sanitize-html": "^2.16.1",
         "babel-plugin-react-compiler": "1.0.0",
+        "jest": "^30.5.1",
+        "jest-environment-jsdom": "^30.5.1",
         "tailwindcss": "^4",
         "typescript": "^5"
     }

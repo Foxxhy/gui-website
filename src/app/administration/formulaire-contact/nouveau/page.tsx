@@ -1,8 +1,8 @@
 import { AdminMutationForm } from '@/components'
-import { contactService } from '@/services'
+import { serviceContact } from '@/services'
 
 export default async function NewContactFieldPage() {
-    const configuration = await contactService.getConfiguration()
+    const configuration = await serviceContact.getConfiguration()
     return <main><h1>Ajouter un champ</h1><AdminMutationForm area="contactForm" operation="champ ajouté" preview={{ kind: 'contactForm', configuration }}><ContactFieldInputs /></AdminMutationForm></main>
 }
 

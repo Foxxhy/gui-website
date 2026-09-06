@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
-import { appConfig } from '@/configs'
+import { configApp } from '@/configs'
 import "./globals.css"
 
 export const metadata: Metadata = {
-    title: appConfig.site.title,
-    description: appConfig.site.description,
+    title: configApp.site.title,
+    description: configApp.site.description,
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { contentService, analyticsService, authService, getCurrentSession } from '@/services'
+import { serviceContent, serviceAnalytics, serviceAuth, serviceGetCurrentSession } from '@/services'
 import { redirect } from 'next/navigation'
 import type { AnalyticsPeriod } from '@/types'
 
@@ -11,15 +11,15 @@ const parsePeriod = (value: string | string[] | undefined): AnalyticsPeriod =>
         : '7days'
 
 export default async function AdministrationAnalyticsPage({ searchParams }: PageProps<'/administration/analytics'>) {
-    const session = await getCurrentSession()
+    const session = await serviceGetCurrentSession()
     if (!session) redirect('/connexion?returnTo=/administration/analytics')
-    if (!authService.canManage(session.user.role, 'analytics')) redirect('/administration')
+    if (!serviceAuth.canManage(session.user.role, 'analytics')) redirect('/administration')
 
     const params = await searchParams
     const period = parsePeriod(params.period)
     const [stats, articles] = await Promise.all([
-        analyticsService.getStats(period),
-        contentService.getAllArticles(),
+        serviceAnalytics.getStats(period),
+        serviceContent.getAllArticles(),
     ])
     const articleTitles = new Map(articles.map((article) => [article.id, article.title]))
 
