@@ -11,20 +11,17 @@ import {
     serviceUser,
 } from '@/services'
 import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
-import { IStatus, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
-import type { IServiceAdminArea } from '@/types'
-
-const areas: IServiceAdminArea[] = ['articles', 'pages', 'contactForm', 'tags', 'users', 'features']
+import { IStatus, MUTATION_AREAS, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
 
 export const actionSubmitAdminMutation = async (
     _previousState: IActionResult | undefined,
     formData: FormData
 ): Promise<IActionResult> => {
-    const area = String(formData.get('area')) as IServiceAdminArea
+    const area = String(formData.get('area')) as (typeof MUTATION_AREAS)[number]
     const operation = String(formData.get('operation') ?? 'modifiée')
     const session = await serviceGetCurrentSession()
 
-    if (!session || !areas.includes(area) || !serviceAuth.canPerform(session.user.role, area, operation)) {
+    if (!session || !MUTATION_AREAS.includes(area) || !serviceAuth.canPerform(session.user.role, area, operation)) {
         return { success: false, message: 'Vous n’êtes pas autorisé à effectuer cette opération.' }
     }
 

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { repositoryUser } from '@/repositories/users'
+import { getRepositories } from '@/repositories'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidEmail, serviceToTrimmedString } from '@/services/validation'
 import { IRole, type IActionResult, type IUser } from '@/types'
 
@@ -18,9 +18,9 @@ const validateUser = (values: Partial<IUser>): IActionResult<Partial<IUser>> | u
 }
 
 export const serviceUser = {
-    getUsers: async (): Promise<IUser[]> => repositoryUser.findUsers(),
+    getUsers: async (): Promise<IUser[]> => getRepositories().users.findUsers(),
     getUserById: async (id: string): Promise<IUser | undefined> =>
-        repositoryUser.findUserById(id),
+        getRepositories().users.findUserById(id),
     createUser: async (values: Partial<IUser>): Promise<IActionResult<IUser>> => {
         const validation = validateUser(values)
         if (validation) return validation as IActionResult<IUser>
@@ -35,14 +35,14 @@ export const serviceUser = {
             createdAt: now,
             updatedAt: now,
         }
-        const created = await repositoryUser.createUser(user)
+        const created = await getRepositories().users.createUser(user)
         return { success: true, message: 'Utilisateur créé.', data: created }
     },
     updateUser: async (id: string, values: Partial<IUser>): Promise<IActionResult<IUser>> => {
         const validation = validateUser(values)
         if (validation) return validation as IActionResult<IUser>
 
-        const updated = await repositoryUser.updateUser(id, {
+        const updated = await getRepositories().users.updateUser(id, {
             name: typeof values.name === 'string' ? values.name.trim() : undefined,
             pseudonym: typeof values.pseudonym === 'string' ? values.pseudonym.trim() : undefined,
             email: values.email
@@ -54,7 +54,7 @@ export const serviceUser = {
         return { success: true, message: 'Utilisateur modifié.', data: updated }
     },
     deleteUser: async (id: string): Promise<IActionResult> => {
-        const deleted = await repositoryUser.deleteUser(id)
+        const deleted = await getRepositories().users.deleteUser(id)
         if (!deleted) {
             return { success: false, message: 'Impossible de supprimer cet utilisateur.' }
         }

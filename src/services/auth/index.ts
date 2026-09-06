@@ -1,3 +1,2 @@
 export * from './auth'
-export * from './password'
 export * from './session-token'

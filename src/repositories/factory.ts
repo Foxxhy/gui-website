@@ -8,7 +8,7 @@ import { mockArticleRepository } from './mock/articles.mock'
 import { mockPageRepository } from './mock/pages.mock'
 import { mockSettingsRepository } from './mock/settings.mock'
 import { mockTagRepository } from './mock/tags.mock'
-import { repositoryUserMock } from '@/repositories/users/users.mock'
+import { repositoryUserMock } from './mock/users.mock'
 
 const notImplemented = (name: string) => {
     throw new Error(

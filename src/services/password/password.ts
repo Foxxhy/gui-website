@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { repositoryUser } from '@/repositories/users'
+import { getRepositories } from '@/repositories'
 import { servicePasswordHashing } from '@/services/password-hashing'
 import { serviceValidateNewPassword } from '@/services/validation'
 import { IRole, type IActionResult } from '@/types'
@@ -31,7 +31,7 @@ export const servicePassword = {
             return { success: false, message: 'Le mot de passe contient des erreurs.', errors }
         }
 
-        const account = await repositoryUser.findAccountByUserId(actorUserId)
+        const account = await getRepositories().users.findAccountByUserId(actorUserId)
         if (!account) {
             return { success: false, message: 'Compte introuvable.' }
         }
@@ -46,7 +46,7 @@ export const servicePassword = {
         }
 
         const passwordHash = await servicePasswordHashing.hashPassword(input.newPassword)
-        const updated = await repositoryUser.updatePasswordHash(actorUserId, passwordHash)
+        const updated = await getRepositories().users.updatePasswordHash(actorUserId, passwordHash)
         if (!updated) {
             return { success: false, message: 'Impossible de mettre à jour le mot de passe.' }
         }
@@ -67,18 +67,18 @@ export const servicePassword = {
             return { success: false, message: 'Le mot de passe contient des erreurs.', errors }
         }
 
-        const user = await repositoryUser.findUserById(targetUserId)
+        const user = await getRepositories().users.findUserById(targetUserId)
         if (!user) {
             return { success: false, message: 'Utilisateur introuvable.' }
         }
 
-        const account = await repositoryUser.findAccountByUserId(targetUserId)
+        const account = await getRepositories().users.findAccountByUserId(targetUserId)
         if (!account) {
             return { success: false, message: 'Ce compte ne possède pas d’identifiants configurés.' }
         }
 
         const passwordHash = await servicePasswordHashing.hashPassword(input.newPassword)
-        const updated = await repositoryUser.updatePasswordHash(targetUserId, passwordHash)
+        const updated = await getRepositories().users.updatePasswordHash(targetUserId, passwordHash)
         if (!updated) {
             return { success: false, message: 'Impossible de mettre à jour le mot de passe.' }
         }

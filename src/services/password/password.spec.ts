@@ -1,11 +1,11 @@
-import { repositoryUser } from '@/repositories/users'
+import { getRepositories } from '@/repositories'
 import { servicePasswordHashing } from '@/services/password-hashing'
 import { IRole } from '@/types'
 import { servicePassword } from './password'
 
 describe('servicePassword', () => {
     it('changes own password when current password is valid', async () => {
-        const account = await repositoryUser.findAccountByUserId('user-editor')
+        const account = await getRepositories().users.findAccountByUserId('user-editor')
         const originalHash = account?.passwordHash
         expect(originalHash).toBeDefined()
 
@@ -17,12 +17,12 @@ describe('servicePassword', () => {
             })
         ).resolves.toMatchObject({ success: true })
 
-        const updatedAccount = await repositoryUser.findAccountByUserId('user-editor')
+        const updatedAccount = await getRepositories().users.findAccountByUserId('user-editor')
         expect(updatedAccount?.passwordHash).not.toBe(originalHash)
         await expect(servicePasswordHashing.verifyPassword('new-editor-password', updatedAccount?.passwordHash ?? '')).resolves.toBe(true)
 
         if (originalHash) {
-            await repositoryUser.updatePasswordHash('user-editor', originalHash)
+            await getRepositories().users.updatePasswordHash('user-editor', originalHash)
         }
     })
 
@@ -53,7 +53,7 @@ describe('servicePassword', () => {
     })
 
     it('allows an admin to change another user password', async () => {
-        const account = await repositoryUser.findAccountByUserId('user-editor')
+        const account = await getRepositories().users.findAccountByUserId('user-editor')
         const originalHash = account?.passwordHash
         expect(originalHash).toBeDefined()
 
@@ -64,11 +64,11 @@ describe('servicePassword', () => {
             })
         ).resolves.toMatchObject({ success: true })
 
-        const updatedAccount = await repositoryUser.findAccountByUserId('user-editor')
+        const updatedAccount = await getRepositories().users.findAccountByUserId('user-editor')
         await expect(servicePasswordHashing.verifyPassword('admin-reset-password', updatedAccount?.passwordHash ?? '')).resolves.toBe(true)
 
         if (originalHash) {
-            await repositoryUser.updatePasswordHash('user-editor', originalHash)
+            await getRepositories().users.updatePasswordHash('user-editor', originalHash)
         }
     })
 
