@@ -26,12 +26,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { IRole, type IUser } from '@/types'
-
-const roleLabels: Record<IRole, string> = {
-    [IRole.ADMIN]: 'Administrateur',
-    [IRole.EDITOR]: 'Éditeur',
-    [IRole.BLOCKED]: 'Bloqué',
-}
+import { ROLE_LABELS } from './role-permissions'
 
 export const UserAdminPanel = ({
     users,
@@ -115,7 +110,7 @@ export const UserAdminPanel = ({
                                     <TableCell>{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">{roleLabels[user.role]}</Badge>
+                                        <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex flex-wrap items-center justify-end gap-2">
