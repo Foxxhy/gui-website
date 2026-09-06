@@ -3,6 +3,7 @@ import { analyticsEvents } from '@/mocks'
 import {
     serviceAnalytics,
     analyticsFormatAnalyticsName,
+    analyticsGetStats,
     analyticsTrack,
 } from './analytics'
 import {
@@ -77,6 +78,14 @@ describe('analyticsComputeStats', () => {
         expect(stats.total).toBeGreaterThan(0)
         expect(stats.pageViews).toBeGreaterThan(0)
         expect(stats.pages.length).toBeGreaterThan(0)
+    })
+})
+
+describe('analyticsGetStats', () => {
+    it('aggregates events through the repository', async () => {
+        await expect(analyticsGetStats('30days')).resolves.toMatchObject({
+            total: expect.any(Number),
+        })
     })
 })
 

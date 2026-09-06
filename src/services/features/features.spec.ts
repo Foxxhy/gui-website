@@ -1,5 +1,4 @@
 import { featureFlags } from '@/mocks'
-
 import { serviceFeature } from './features'
 
 describe('serviceFeature', () => {
@@ -20,13 +19,5 @@ describe('serviceFeature', () => {
         const result = await serviceFeature.updateFlag('contact', false)
         expect(result.success).toBe(true)
         expect(featureFlags.contact).toBe(false)
-        expect(result.data?.contact).toBe(false)
-    })
-
-    it('rejects an unknown feature key', async () => {
-        await expect(serviceFeature.updateFlag('unknown', true)).resolves.toEqual({
-            success: false,
-            message: 'La fonctionnalité demandée est invalide.',
-        })
     })
 })

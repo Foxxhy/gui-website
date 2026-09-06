@@ -13,11 +13,14 @@ export interface IArticleRepository {
     findAll(): Promise<IArticle[]>
     findById(id: string): Promise<IArticle | undefined>
     findPublishedBySlug(slug: string): Promise<IArticle | undefined>
+    create(article: IArticle): Promise<IArticle>
+    update(id: string, values: Partial<IArticle>): Promise<IArticle | undefined>
 }
 
 export interface IPageRepository {
     findAll(): Promise<IPage[]>
     findBySlug(slug: string): Promise<IPage | undefined>
+    update(id: string, values: Partial<IPage>): Promise<IPage | undefined>
 }
 
 export interface ITagRepository {
@@ -33,6 +36,7 @@ export interface ISettingsRepository {
     getFeatureFlags(): Promise<IFeatureFlags>
     updateFeatureFlag(key: keyof IFeatureFlags, enabled: boolean): Promise<IFeatureFlags>
     getContactFormConfiguration(): Promise<IContactFormConfiguration>
+    updateContactFormConfiguration(values: Partial<IContactFormConfiguration>): Promise<IContactFormConfiguration>
 }
 
 export interface IAnalyticsRepository {

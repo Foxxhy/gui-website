@@ -3,7 +3,11 @@ import type { AnalyticsPeriod, IAnalyticsEvent } from '@/types'
 import { analyticsFormatAnalyticsName } from './stats'
 import { getRepositories } from '@/repositories'
 
-export { analyticsFormatAnalyticsName } from './stats'
+export {
+    analyticsFormatAnalyticsName,
+    analyticsGetPeriodRange,
+    analyticsIsKnownEventType,
+} from './stats'
 
 export const analyticsTrack = async ({
     type,
@@ -19,6 +23,9 @@ export const analyticsTrack = async ({
     }
     return getRepositories().analytics.track(event)
 }
+
+export const analyticsGetStats = async (period: AnalyticsPeriod) =>
+    getRepositories().analytics.getStats(period)
 
 export const serviceAnalytics = {
     trackEvent: async (type: string, path: string, articleId?: string): Promise<IAnalyticsEvent> =>
