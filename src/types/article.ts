@@ -11,14 +11,6 @@ export enum IStatus {
     CANCELLED = 'cancelled',
 }
 
-export interface IFilter {
-    id: string
-    name: string
-    slug: string
-    description?: string
-    type: ICategory
-}
-
 export interface IArticleQuery {
     search?: string
     tagSlugs?: string[]

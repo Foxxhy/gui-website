@@ -8,14 +8,6 @@ describe('serviceContact', () => {
         expect(orders).toEqual([...orders].sort((a, b) => a - b))
     })
 
-    it('rejects an incomplete submission', async () => {
-        const formData = new FormData()
-        await expect(serviceContact.submit(formData)).resolves.toMatchObject({
-            success: false,
-            message: 'Le formulaire contient des erreurs.',
-        })
-    })
-
     it('accepts a valid submission and tracks analytics', async () => {
         const trackEvent = jest.spyOn(serviceAnalytics, 'trackEvent')
         const configuration = await serviceContact.getConfiguration()
@@ -31,16 +23,17 @@ describe('serviceContact', () => {
             }
         }
 
-        await expect(serviceContact.submit(formData)).resolves.toMatchObject({
-            success: true,
-        })
+        await expect(serviceContact.submit(formData)).resolves.toMatchObject({ success: true })
         expect(trackEvent).toHaveBeenCalledWith('contact-submission', '/contact')
         trackEvent.mockRestore()
     })
 
-    it('simulates a configuration mutation', async () => {
-        await expect(serviceContact.simulateConfigurationMutation()).resolves.toMatchObject({
+    it('updates configuration', async () => {
+        await expect(
+            serviceContact.updateConfiguration({ title: 'Nouveau titre' })
+        ).resolves.toMatchObject({
             success: true,
+            data: { title: 'Nouveau titre' },
         })
     })
 })

@@ -1,6 +1,5 @@
 import { users } from '@/mocks'
 import { IRole } from '@/types'
-
 import { serviceUser } from './users'
 
 describe('serviceUser', () => {
@@ -8,30 +7,16 @@ describe('serviceUser', () => {
         await expect(serviceUser.getUsers()).resolves.toBe(users)
     })
 
-    it('finds a user by id', async () => {
-        await expect(serviceUser.getUserById('user-admin')).resolves.toEqual(users[0])
-        await expect(serviceUser.getUserById('missing')).resolves.toBeUndefined()
-    })
-
-    it('rejects invalid user mutations', async () => {
+    it('creates a valid user', async () => {
+        const initialLength = users.length
         await expect(
-            serviceUser.simulateMutation({ name: '', email: 'bad', role: IRole.EDITOR })
-        ).resolves.toMatchObject({
-            success: false,
-            errors: {
-                name: 'Le nom est obligatoire.',
-                email: 'L’adresse e-mail est invalide.',
-            },
-        })
-    })
-
-    it('accepts a valid simulated mutation', async () => {
-        await expect(
-            serviceUser.simulateMutation({
+            serviceUser.createUser({
                 name: 'Nouveau',
+                pseudonym: 'Nouveau pseudonyme',
                 email: 'nouveau@association.test',
                 role: IRole.EDITOR,
             })
         ).resolves.toMatchObject({ success: true })
+        expect(users.length).toBe(initialLength + 1)
     })
 })

@@ -1,4 +1,5 @@
 import { getRepositories } from '@/repositories'
+import { validatePageSections } from '@/services/content/page-sections'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug } from '@/services/validation'
 import {
     IStatus,
@@ -7,17 +8,11 @@ import {
     type IArticlePagination,
     type IArticleQuery,
     type IPage,
+    type IUser,
 } from '@/types'
 
-const simulatedResult = <T>(message: string, data?: T): IActionResult<T> => ({
-    success: true,
-    message: `${message} La simulation ne conserve pas cette modification.`,
-    data,
-})
-
 const validateArticle = async (values: Partial<IArticle>): Promise<IActionResult<Partial<IArticle>> | undefined> => {
-    const { articles } = getRepositories()
-    const allArticles = await articles.findAll()
+    const allArticles = await getRepositories().articles.findAll()
     const slug = serviceNormalizeSlug(values.slug)
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
@@ -32,35 +27,30 @@ const validateArticle = async (values: Partial<IArticle>): Promise<IActionResult
 }
 
 const validatePage = async (values: Partial<IPage>): Promise<IActionResult<Partial<IPage>> | undefined> => {
-    const { pages } = getRepositories()
-    const allPages = await pages.findAll()
-    const slug = serviceNormalizeSlug(values.slug)
+    const allPages = await getRepositories().pages.findAll()
+    const slug = serviceNormalizeSlug(values.slug ?? '')
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
     const errors = serviceFieldErrors(
         ['title', !rawTitle ? 'Le titre est obligatoire.' : rawTitle.length > serviceValidationLimits.title ? 'Le titre est trop long.' : undefined],
-        ['slug', !serviceIsValidSlug(slug) ? 'Le slug est invalide.' : undefined],
+        ['slug', values.slug !== undefined && !serviceIsValidSlug(slug) ? 'Le slug est invalide.' : undefined],
         ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > serviceValidationLimits.content ? 'Le contenu est trop long.' : undefined],
     )
-    if (allPages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
+    if (values.slug && allPages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
     return Object.keys(errors).length ? { success: false, message: 'La page contient des erreurs.', errors } : undefined
 }
 
 export const serviceContent = {
     getPublishedArticles: async (): Promise<IArticle[]> => {
-        const { articles } = getRepositories()
-        const allArticles = await articles.findAll()
+        const allArticles = await getRepositories().articles.findAll()
         return allArticles.filter((article) => article.status === IStatus.PUBLISHED)
     },
-    getPublishedArticlesPage: async (
-        query: IArticleQuery
-    ): Promise<IArticlePagination> => {
-        const { articles } = getRepositories()
+    getPublishedArticlesPage: async (query: IArticleQuery): Promise<IArticlePagination> => {
         const search = query.search?.trim().toLocaleLowerCase('fr-FR')
         const tagSlugs = [...new Set(query.tagSlugs ?? [])]
         const limit = Number.isInteger(query.limit) && query.limit > 0 ? query.limit : 10
 
-        let filteredArticles = (await articles.findAll()).filter(
+        let filteredArticles = (await getRepositories().articles.findAll()).filter(
             (article) => article.status === IStatus.PUBLISHED
         )
 
@@ -100,11 +90,82 @@ export const serviceContent = {
     getPageBySlug: async (slug: string): Promise<IPage | undefined> =>
         getRepositories().pages.findBySlug(slug),
     getPages: async (): Promise<IPage[]> => getRepositories().pages.findAll(),
-    simulateArticleMutation: async (
-        message: string,
-        values: Partial<IArticle>
-    ): Promise<IActionResult<Partial<IArticle>>> => (await validateArticle(values)) ?? simulatedResult(message, values),
-    simulatePageMutation: async (
-        values: Partial<IPage>
-    ): Promise<IActionResult<Partial<IPage>>> => (await validatePage(values)) ?? simulatedResult('Page enregistrée.', values),
+    createArticle: async (values: Partial<IArticle>, author: IUser): Promise<IActionResult<IArticle>> => {
+        const validation = await validateArticle(values)
+        if (validation) return validation as IActionResult<IArticle>
+
+        const now = new Date().toISOString()
+        const article: IArticle = {
+            id: `article-${Date.now()}`,
+            title: String(values.title).trim(),
+            slug: serviceNormalizeSlug(values.slug),
+            description: typeof values.description === 'string' ? values.description.trim() : undefined,
+            content: String(values.content).trim(),
+            category: values.category,
+            tags: values.tags,
+            author,
+            status: values.status ?? IStatus.DRAFT,
+            publishedAt: values.status === IStatus.PUBLISHED ? now : undefined,
+            createdAt: now,
+            updatedAt: now,
+        }
+        const created = await getRepositories().articles.create(article)
+        return { success: true, message: 'Article créé.', data: created }
+    },
+    updateArticle: async (id: string, values: Partial<IArticle>, author?: IUser): Promise<IActionResult<IArticle>> => {
+        const existing = await getRepositories().articles.findById(id)
+        if (!existing) return { success: false, message: 'Article introuvable.' }
+
+        const validation = await validateArticle({ ...values, id })
+        if (validation) return validation as IActionResult<IArticle>
+
+        const now = new Date().toISOString()
+        const updated = await getRepositories().articles.update(id, {
+            title: typeof values.title === 'string' ? values.title.trim() : existing.title,
+            slug: values.slug ? serviceNormalizeSlug(values.slug) : existing.slug,
+            description: typeof values.description === 'string' ? values.description.trim() : existing.description,
+            content: typeof values.content === 'string' ? values.content.trim() : existing.content,
+            status: values.status ?? existing.status,
+            tags: values.tags ?? existing.tags,
+            author: author ?? existing.author,
+            publishedAt:
+                values.status === IStatus.PUBLISHED
+                    ? existing.publishedAt ?? now
+                    : values.status !== undefined
+                        ? undefined
+                        : existing.publishedAt,
+            updatedAt: now,
+        })
+        if (!updated) return { success: false, message: 'Article introuvable.' }
+        return { success: true, message: 'Article modifié.', data: updated }
+    },
+    updatePage: async (id: string, values: Partial<IPage>): Promise<IActionResult<IPage>> => {
+        const existing = await getRepositories().pages.findAll().then((pages) => pages.find((page) => page.id === id))
+        if (!existing) return { success: false, message: 'Page introuvable.' }
+
+        const sections = values.sections ?? existing.sections
+        const sectionError = validatePageSections(sections)
+        if (sectionError) return { success: false, message: sectionError }
+
+        const merged = {
+            ...values,
+            id,
+            slug: values.slug ?? existing.slug,
+            title: values.title ?? existing.title,
+            content: values.content ?? existing.content,
+            sections,
+        }
+        const validation = await validatePage(merged)
+        if (validation) return validation as IActionResult<IPage>
+
+        const updated = await getRepositories().pages.update(id, {
+            title: typeof values.title === 'string' ? values.title.trim() : existing.title,
+            slug: values.slug ? serviceNormalizeSlug(values.slug) : existing.slug,
+            content: typeof values.content === 'string' ? values.content.trim() : existing.content,
+            sections,
+            updatedAt: new Date().toISOString(),
+        })
+        if (!updated) return { success: false, message: 'Page introuvable.' }
+        return { success: true, message: 'Page enregistrée.', data: updated }
+    },
 }

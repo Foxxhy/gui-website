@@ -21,10 +21,13 @@ const createMongoRepositories = (): IRepositories => ({
         findAll: async () => notImplemented('articles'),
         findById: async () => notImplemented('articles'),
         findPublishedBySlug: async () => notImplemented('articles'),
+        create: async () => notImplemented('articles'),
+        update: async () => notImplemented('articles'),
     },
     pages: {
         findAll: async () => notImplemented('pages'),
         findBySlug: async () => notImplemented('pages'),
+        update: async () => notImplemented('pages'),
     },
     users: {
         findUserById: async () => notImplemented('users'),
@@ -32,6 +35,9 @@ const createMongoRepositories = (): IRepositories => ({
         findAccountByLogin: async () => notImplemented('users'),
         findAccountByUserId: async () => notImplemented('users'),
         updatePasswordHash: async () => notImplemented('users'),
+        createUser: async () => notImplemented('users'),
+        updateUser: async () => notImplemented('users'),
+        deleteUser: async () => notImplemented('users'),
     },
     tags: {
         findAll: async () => notImplemented('tags'),
@@ -45,6 +51,7 @@ const createMongoRepositories = (): IRepositories => ({
         getFeatureFlags: async () => notImplemented('settings'),
         updateFeatureFlag: async () => notImplemented('settings'),
         getContactFormConfiguration: async () => notImplemented('settings'),
+        updateContactFormConfiguration: async () => notImplemented('settings'),
     },
     analytics: {
         track: async () => notImplemented('analytics'),

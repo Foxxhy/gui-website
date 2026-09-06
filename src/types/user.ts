@@ -29,4 +29,7 @@ export interface IUserRepository {
   findAccountByLogin: (login: string) => Promise<IUserCredentials | undefined>
   findAccountByUserId: (userId: string) => Promise<IUserCredentials | undefined>
   updatePasswordHash: (userId: string, passwordHash: string) => Promise<boolean>
+  createUser: (user: IUser) => Promise<IUser>
+  updateUser: (id: string, values: Partial<IUser>) => Promise<IUser | undefined>
+  deleteUser: (id: string) => Promise<boolean>
 }

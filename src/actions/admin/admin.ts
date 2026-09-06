@@ -1,10 +1,18 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { serviceAuth, serviceContact, serviceContent, serviceFeature, serviceGetCurrentSession, serviceTag, serviceUser } from '@/services'
-import type { IActionResult } from '@/types'
-
-type IServiceAdminArea = 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
+import {
+    serviceAuth,
+    serviceContact,
+    serviceContent,
+    serviceFeature,
+    serviceGetCurrentSession,
+    serviceTag,
+    serviceUser,
+} from '@/services'
+import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
+import { IStatus, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
+import type { IServiceAdminArea } from '@/types'
 
 const areas: IServiceAdminArea[] = ['articles', 'pages', 'contactForm', 'tags', 'users', 'features']
 
@@ -25,14 +33,23 @@ export const actionSubmitAdminMutation = async (
         const selectedTagIds = formData.getAll('tags').map(String)
         const availableTags = await serviceTag.getTags()
         const tags = availableTags.filter((tag) => selectedTagIds.includes(tag.id))
-        const result = await serviceContent.simulateArticleMutation(`Article ${operation}.`, { ...values, tags })
+        const rawStatus = typeof values.status === 'string' ? values.status : undefined
+        const status = rawStatus && Object.values(IStatus).includes(rawStatus as IStatus)
+            ? rawStatus as IStatus
+            : undefined
+        const articleValues = { ...values, tags, status }
+        const result = formData.get('id')
+            ? await serviceContent.updateArticle(String(formData.get('id')), articleValues, session.user)
+            : await serviceContent.createArticle(articleValues, session.user)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'tags') {
+        const rawStyle = String(formData.get('style') ?? '')
+        const style = TAG_STYLES.includes(rawStyle as ITagStyle) ? rawStyle as ITagStyle : 'green'
         const tagValues = {
             name: String(formData.get('name') ?? ''),
             slug: String(formData.get('slug') ?? ''),
-            style: String(formData.get('style') ?? ''),
+            style,
             description: String(formData.get('description') ?? ''),
         }
         const result = operation === 'supprimé'
@@ -43,11 +60,27 @@ export const actionSubmitAdminMutation = async (
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'pages') {
-        const result = await serviceContent.simulatePageMutation(values)
+        const pageId = String(formData.get('id') ?? '')
+        const existing = (await serviceContent.getPages()).find((page) => page.id === pageId)
+        if (!existing) return { success: false, message: 'Page introuvable.' }
+
+        const sections = parsePageSectionsFromFormData(formData, existing.sections)
+        const result = await serviceContent.updatePage(pageId, { ...values, sections })
+        if (result.success) {
+            revalidatePath('/')
+            revalidatePath('/association')
+            revalidatePath('/gestion-des-donnees')
+        }
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'users') {
-        const result = await serviceUser.simulateMutation(values)
+        if (operation === 'supprimé') {
+            const result = await serviceUser.deleteUser(String(formData.get('id') ?? ''))
+            return { success: result.success, message: result.message, errors: result.errors }
+        }
+        const result = formData.get('id')
+            ? await serviceUser.updateUser(String(formData.get('id')), values)
+            : await serviceUser.createUser(values)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'features') {
@@ -61,5 +94,6 @@ export const actionSubmitAdminMutation = async (
         }
         return { success: result.success, message: result.message, errors: result.errors }
     }
-    return serviceContact.simulateConfigurationMutation()
+    const result = await serviceContact.updateConfiguration(values)
+    return { success: result.success, message: result.message, errors: result.errors }
 }

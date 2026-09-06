@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { IContactFieldType, IStatus, type IArticle, type IContactField, type IContactFormConfiguration, type IPage, type ITag } from '@/types'
+import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
+import { IContactFieldType, IStatus, TAG_STYLES, type IArticle, type IContactField, type IContactFormConfiguration, type IPage, type ITag, type ITagStyle } from '@/types'
 import { ArticleList, ContactField, PageSections } from './public/content'
 import { TagBadge } from './public/tag-badge'
 
@@ -32,7 +33,16 @@ const PreviewArticle = ({ article, values }: { article: IArticle; values: FormDa
     return <article><p><strong>{status === IStatus.PUBLISHED ? 'Publié' : status === IStatus.CANCELLED ? 'Annulé' : 'Brouillon'}</strong></p><h2>{getValue(values, 'title', article.title) || 'Titre de l’article'}</h2><p><strong>Slug :</strong> {getValue(values, 'slug', article.slug) || 'non renseigné'}</p><p>{getValue(values, 'description', article.description) || 'Aucun extrait.'}</p><p>{getValue(values, 'content', article.content) || 'Le contenu de l’article apparaîtra ici.'}</p>{article.author && <p>Auteur : {article.author.pseudonym}</p>}</article>
 }
 
-const PreviewPage = ({ page, values }: { page: IPage; values: FormData }) => <><h2>{getValue(values, 'title', page.title) || 'Titre de la page'}</h2><p>{getValue(values, 'content', page.content) || 'Le contenu de la page apparaîtra ici.'}</p><PageSections sections={page.sections} /></>
+const PreviewPage = ({ page, values }: { page: IPage; values: FormData }) => {
+    const sections = parsePageSectionsFromFormData(values, page.sections)
+    return (
+        <>
+            <h2>{getValue(values, 'title', page.title) || 'Titre de la page'}</h2>
+            <p>{getValue(values, 'content', page.content) || 'Le contenu de la page apparaîtra ici.'}</p>
+            <PageSections sections={sections} />
+        </>
+    )
+}
 
 const PreviewContactForm = ({ configuration, fieldId, values }: { configuration: IContactFormConfiguration; fieldId?: string; values: FormData }) => {
     const currentField = configuration.fields.find((field) => field.id === fieldId)
@@ -43,11 +53,13 @@ const PreviewContactForm = ({ configuration, fieldId, values }: { configuration:
 }
 
 const PreviewTag = ({ tag, values }: { tag: ITag; values: FormData }) => {
+    const rawStyle = getValue(values, 'style', tag.style)
+    const style = TAG_STYLES.includes(rawStyle as ITagStyle) ? (rawStyle as ITagStyle) : tag.style
     const previewTag: ITag = {
         ...tag,
         name: getValue(values, 'name', tag.name) || 'Nom du tag',
         slug: getValue(values, 'slug', tag.slug),
-        style: getValue(values, 'style', tag.style),
+        style,
         description: getValue(values, 'description', tag.description),
     }
 

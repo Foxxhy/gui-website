@@ -1,12 +1,11 @@
 import { getRepositories } from '@/repositories'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug, serviceToTrimmedString } from '@/services/validation'
-import type { IActionResult, IFieldErrors, ITag } from '@/types'
+import { TAG_STYLES, type IActionResult, type IFieldErrors, type ITag } from '@/types'
 
 type TagInput = Pick<ITag, 'name' | 'slug' | 'style'> & Pick<ITag, 'description'>
 
 const validate = async (values: Partial<TagInput>, currentId?: string): Promise<IFieldErrors> => {
-    const { tags } = getRepositories()
-    const allTags = await tags.findAll()
+    const allTags = await getRepositories().tags.findAll()
     const rawName = typeof values.name === 'string' ? values.name.trim() : ''
     const rawDescription = typeof values.description === 'string' ? values.description.trim() : ''
     const name = serviceToTrimmedString(values.name, serviceValidationLimits.name)
@@ -15,7 +14,7 @@ const validate = async (values: Partial<TagInput>, currentId?: string): Promise<
     const errors = serviceFieldErrors(
         ['name', !name ? 'Le nom est obligatoire.' : rawName.length > serviceValidationLimits.name ? 'Le nom est trop long.' : undefined],
         ['slug', !slug ? 'Le slug est obligatoire.' : !serviceIsValidSlug(slug) ? 'Le slug contient des caractères invalides.' : undefined],
-        ['style', !['green', 'blue', 'purple', 'red', 'yellow'].includes(style) ? 'Le style est invalide.' : undefined],
+        ['style', !TAG_STYLES.includes(style as ITag['style']) ? 'Le style est invalide.' : undefined],
         ['description', rawDescription.length > serviceValidationLimits.description ? 'La description est trop longue.' : undefined],
     )
     if (slug && allTags.some((tag) => tag.slug === slug && tag.id !== currentId)) {
@@ -23,12 +22,6 @@ const validate = async (values: Partial<TagInput>, currentId?: string): Promise<
     }
     return errors
 }
-
-const result = <T>(message: string, data?: T): IActionResult<T> => ({
-    success: true,
-    message: `${message} La simulation sera réinitialisée au rechargement.`,
-    data,
-})
 
 export const serviceTag = {
     getTags: async (): Promise<ITag[]> => getRepositories().tags.findAll(),
@@ -43,33 +36,32 @@ export const serviceTag = {
             id: `tag-${Date.now()}`,
             name: serviceToTrimmedString(values.name, serviceValidationLimits.name),
             slug: serviceNormalizeSlug(values.slug),
-            style: serviceToTrimmedString(values.style, 32),
+            style: serviceToTrimmedString(values.style, 32) as ITag['style'],
             description: serviceToTrimmedString(values.description, serviceValidationLimits.description) || undefined,
         }
         const created = await getRepositories().tags.create(tag)
-        return result('Tag créé.', created)
+        return { success: true, message: 'Tag créé.', data: created }
     },
     updateTag: async (id: string, values: Partial<TagInput>): Promise<IActionResult<ITag>> => {
-        const { tags } = getRepositories()
-        const tag = await tags.findById(id)
+        const tag = await getRepositories().tags.findById(id)
         if (!tag) return { success: false, message: 'Tag introuvable.' }
         const errors = await validate(values, id)
         if (Object.keys(errors).length > 0) {
             return { success: false, message: 'Le tag contient des erreurs.', errors }
         }
-        const updated = await tags.update(id, {
+        const updated = await getRepositories().tags.update(id, {
             name: serviceToTrimmedString(values.name, serviceValidationLimits.name),
             slug: serviceNormalizeSlug(values.slug),
-            style: serviceToTrimmedString(values.style, 32),
+            style: serviceToTrimmedString(values.style, 32) as ITag['style'],
             description: serviceToTrimmedString(values.description, serviceValidationLimits.description) || undefined,
         })
-        return result('Tag modifié.', updated)
+        if (!updated) return { success: false, message: 'Tag introuvable.' }
+        return { success: true, message: 'Tag modifié.', data: updated }
     },
     deleteTag: async (id: string): Promise<IActionResult> => {
-        const { tags } = getRepositories()
-        const deleted = await tags.delete(id)
+        const deleted = await getRepositories().tags.delete(id)
         if (!deleted) return { success: false, message: 'Tag introuvable.' }
-        await tags.removeTagFromArticles(id)
-        return result('Tag supprimé et associations retirées.')
+        await getRepositories().tags.removeTagFromArticles(id)
+        return { success: true, message: 'Tag supprimé et associations retirées.' }
     },
 }

@@ -1,1 +1,8 @@
-export { serviceAnalytics, analyticsFormatAnalyticsName } from '@/analytics/analytics'
+export {
+    serviceAnalytics,
+    analyticsFormatAnalyticsName,
+    analyticsGetPeriodRange,
+    analyticsGetStats,
+    analyticsIsKnownEventType,
+    analyticsTrack,
+} from '@/analytics/analytics'

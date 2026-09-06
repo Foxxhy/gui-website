@@ -51,15 +51,23 @@ export const serviceContact = {
             return { success: false, message: 'Le formulaire contient des erreurs.', errors }
         }
 
-        const result = {
-            success: true,
-            message: 'Votre message a été enregistré par la simulation. Aucun e-mail n’a été envoyé.',
-        }
         await serviceAnalytics.trackEvent('contact-submission', '/contact')
-        return result
+        return {
+            success: true,
+            message: 'Votre message a été enregistré. Aucun e-mail n’a été envoyé.',
+        }
     },
-    simulateConfigurationMutation: async (): Promise<IActionResult> => ({
-        success: true,
-        message: 'Configuration mise à jour dans la simulation. Elle sera réinitialisée au rechargement.',
-    }),
+    updateConfiguration: async (
+        values: Partial<IContactFormConfiguration>
+    ): Promise<IActionResult<IContactFormConfiguration>> => {
+        const data = await getRepositories().settings.updateContactFormConfiguration(values)
+        return {
+            success: true,
+            message: 'Configuration mise à jour.',
+            data: {
+                ...data,
+                fields: sortedFields(data.fields),
+            },
+        }
+    },
 }

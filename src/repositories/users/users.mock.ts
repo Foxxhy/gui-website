@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { accounts, users } from '@/mocks'
-import type { IUser, IUserCredentials, IUserRepository } from '@/types'
+import { IRole, type IUser, type IUserCredentials, type IUserRepository } from '@/types'
 
 const toCredentials = (account: (typeof accounts)[number]): IUserCredentials => ({
     userId: account.user.id,
@@ -25,6 +25,28 @@ export const repositoryUserMock: IUserRepository = {
         const account = accounts.find((candidate) => candidate.user.id === userId)
         if (!account) return false
         account.passwordHash = passwordHash
+        return true
+    },
+    createUser: async (user) => {
+        users.push(user)
+        return user
+    },
+    updateUser: async (id, values) => {
+        const user = users.find((candidate) => candidate.id === id)
+        if (!user) return undefined
+        Object.assign(user, values, { updatedAt: new Date().toISOString() })
+        return user
+    },
+    deleteUser: async (id) => {
+        const userIndex = users.findIndex((user) => user.id === id)
+        if (userIndex < 0) return false
+
+        const adminCount = users.filter((user) => user.role === IRole.ADMIN).length
+        if (users[userIndex].role === IRole.ADMIN && adminCount <= 1) return false
+
+        users.splice(userIndex, 1)
+        const accountIndex = accounts.findIndex((account) => account.user.id === id)
+        if (accountIndex >= 0) accounts.splice(accountIndex, 1)
         return true
     },
 }

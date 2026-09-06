@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { configApp } from '@/configs'
+import { createSessionToken } from '@/services/auth/session-token'
 import { serviceAuth, serviceSessionCookie } from '@/services'
 
 import { actionLogin, actionLogout } from './auth'
@@ -22,6 +23,10 @@ jest.mock('@/services', () => ({
     serviceToTrimmedString: jest.requireActual('@/services/validation').serviceToTrimmedString,
 }))
 
+jest.mock('@/services/auth/session-token', () => ({
+    createSessionToken: jest.fn(),
+}))
+
 describe('actionLogin', () => {
     const cookieStore = {
         set: jest.fn(),
@@ -30,10 +35,11 @@ describe('actionLogin', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-            ; (cookies as jest.Mock).mockResolvedValue(cookieStore)
-            ; (redirect as unknown as jest.Mock).mockImplementation(() => {
-                throw new Error('NEXT_REDIRECT')
-            })
+        ;(cookies as jest.Mock).mockResolvedValue(cookieStore)
+        ;(redirect as unknown as jest.Mock).mockImplementation(() => {
+            throw new Error('NEXT_REDIRECT')
+        })
+        ;(createSessionToken as jest.Mock).mockReturnValue('signed-session-token')
     })
 
     it('rejects missing credentials', async () => {
@@ -49,7 +55,7 @@ describe('actionLogin', () => {
     })
 
     it('rejects invalid credentials', async () => {
-        ; (serviceAuth.authenticate as jest.Mock).mockResolvedValue(undefined)
+        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue(undefined)
         const formData = new FormData()
         formData.set('login', 'admin')
         formData.set('password', 'wrong')
@@ -61,23 +67,24 @@ describe('actionLogin', () => {
     })
 
     it('sets the session cookie and redirects on success', async () => {
-        ; (serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
+        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
         const formData = new FormData()
         formData.set('login', 'admin')
         formData.set('password', 'admin')
         formData.set('returnTo', '/administration/articles')
 
         await expect(actionLogin(undefined, formData)).rejects.toThrow('NEXT_REDIRECT')
+        expect(createSessionToken).toHaveBeenCalledWith('user-admin')
         expect(cookieStore.set).toHaveBeenCalledWith(
             serviceSessionCookie,
-            'user-admin',
+            'signed-session-token',
             configApp.session.cookieOptions
         )
         expect(redirect).toHaveBeenCalledWith('/administration/articles')
     })
 
     it('redirects to administration when returnTo is not an admin path', async () => {
-        ; (serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
+        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
         const formData = new FormData()
         formData.set('login', 'admin')
         formData.set('password', 'admin')
@@ -96,10 +103,10 @@ describe('actionLogout', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-            ; (cookies as jest.Mock).mockResolvedValue(cookieStore)
-            ; (redirect as unknown as jest.Mock).mockImplementation(() => {
-                throw new Error('NEXT_REDIRECT')
-            })
+        ;(cookies as jest.Mock).mockResolvedValue(cookieStore)
+        ;(redirect as unknown as jest.Mock).mockImplementation(() => {
+            throw new Error('NEXT_REDIRECT')
+        })
     })
 
     it('deletes the session cookie and redirects home', async () => {

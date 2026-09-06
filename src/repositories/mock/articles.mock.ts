@@ -9,4 +9,14 @@ export const mockArticleRepository: IArticleRepository = {
         articles.find(
             (article) => article.slug === slug && article.status === IStatus.PUBLISHED
         ),
+    create: async (article) => {
+        articles.push(article)
+        return article
+    },
+    update: async (id, values) => {
+        const article = articles.find((candidate) => candidate.id === id)
+        if (!article) return undefined
+        Object.assign(article, values)
+        return article
+    },
 }

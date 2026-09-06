@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { configApp } from '@/configs'
+import { createSessionToken } from '@/services/auth/session-token'
 import { serviceAuth, serviceSessionCookie } from '@/services'
 import { serviceToTrimmedString } from '@/services'
 import type { IActionResult } from '@/types'
@@ -24,7 +25,11 @@ export const actionLogin = async (
     }
 
     const cookieStore = await cookies()
-    cookieStore.set(serviceSessionCookie, user.id, configApp.session.cookieOptions)
+    cookieStore.set(
+        serviceSessionCookie,
+        createSessionToken(user.id),
+        configApp.session.cookieOptions
+    )
     redirect(
         returnTo === configApp.routes.administration || returnTo.startsWith(`${configApp.routes.administration}/`)
             ? returnTo
