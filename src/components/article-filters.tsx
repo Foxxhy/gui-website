@@ -8,18 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getTagBadgeVariant } from '@/components/public/tag-badge'
+import { createArticlesUrl } from '@/lib/articles-url'
 import type { ITag } from '@/types'
-
-const createArticlesUrl = (search: string, tagSlugs: string[]) => {
-    const params = new URLSearchParams()
-    const normalizedSearch = search.trim()
-
-    if (normalizedSearch) params.set('search', normalizedSearch)
-    for (const tagSlug of tagSlugs) params.append('tags', tagSlug)
-    params.set('page', '1')
-
-    return `/articles?${params.toString()}`
-}
 
 type ArticleFiltersProps = {
     search: string

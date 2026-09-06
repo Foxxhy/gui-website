@@ -60,4 +60,14 @@ export const serviceUser = {
         }
         return { success: true, message: 'Utilisateur supprimé.' }
     },
+    mutateFromFormData: async (formData: FormData, operation: string): Promise<IActionResult<unknown>> => {
+        const values = Object.fromEntries(formData.entries())
+        const id = formData.get('id')
+        if (operation === 'supprimé') {
+            return await serviceUser.deleteUser(String(id ?? ''))
+        }
+        return id
+            ? await serviceUser.updateUser(String(id), values)
+            : await serviceUser.createUser(values)
+    },
 }

@@ -8,6 +8,13 @@ describe('serviceContact', () => {
         expect(orders).toEqual([...orders].sort((a, b) => a - b))
     })
 
+    it('returns a contact field by id', async () => {
+        await expect(serviceContact.getFieldById('field-name')).resolves.toMatchObject({
+            id: 'field-name',
+            technicalName: 'name',
+        })
+    })
+
     it('accepts a valid submission and tracks analytics', async () => {
         const trackEvent = jest.spyOn(serviceAnalytics, 'trackEvent')
         const configuration = await serviceContact.getConfiguration()
@@ -61,6 +68,76 @@ describe('serviceContact', () => {
         ).resolves.toMatchObject({
             success: true,
             data: { title: 'Nouveau titre' },
+        })
+    })
+
+    it('creates a contact field from admin form data', async () => {
+        const formData = new FormData()
+        formData.set('technicalName', 'customField')
+        formData.set('label', 'Champ personnalisé')
+        formData.set('type', 'text')
+        formData.set('required', 'true')
+
+        await expect(serviceContact.createField(formData)).resolves.toMatchObject({
+            success: true,
+            data: expect.objectContaining({
+                fields: expect.arrayContaining([
+                    expect.objectContaining({
+                        technicalName: 'customField',
+                        label: 'Champ personnalisé',
+                    }),
+                ]),
+            }),
+        })
+    })
+
+    it('updates a contact field from admin form data', async () => {
+        const formData = new FormData()
+        formData.set('id', 'field-name')
+        formData.set('technicalName', 'name')
+        formData.set('label', 'Nom complet')
+        formData.set('type', 'text')
+        formData.set('required', 'true')
+
+        await expect(serviceContact.updateField(formData)).resolves.toMatchObject({
+            success: true,
+            data: expect.objectContaining({
+                fields: expect.arrayContaining([
+                    expect.objectContaining({
+                        id: 'field-name',
+                        label: 'Nom complet',
+                    }),
+                ]),
+            }),
+        })
+    })
+
+    it('deletes a contact field', async () => {
+        const createFormData = new FormData()
+        createFormData.set('technicalName', 'temporaryField')
+        createFormData.set('label', 'Champ temporaire')
+        createFormData.set('type', 'text')
+
+        const created = await serviceContact.createField(createFormData)
+        const fieldId = created.data?.fields.find((field) => field.technicalName === 'temporaryField')?.id
+        if (!fieldId) throw new Error('Champ temporaire introuvable')
+
+        await expect(serviceContact.deleteField(fieldId)).resolves.toMatchObject({ success: true })
+        await expect(serviceContact.getFieldById(fieldId)).resolves.toBeUndefined()
+    })
+
+    it('reorders a contact field', async () => {
+        const configuration = await serviceContact.getConfiguration()
+        const secondField = configuration.fields[1]
+        const formData = new FormData()
+        formData.set('id', secondField.id)
+        formData.set('move', 'up')
+
+        await expect(serviceContact.reorderField(secondField.id, 'up')).resolves.toMatchObject({
+            success: true,
+        })
+        await expect(serviceContact.mutateFromAdminForm(formData, 'ordre modifié')).resolves.toMatchObject({
+            success: true,
         })
     })
 })

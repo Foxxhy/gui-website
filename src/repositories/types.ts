@@ -3,6 +3,7 @@ import type {
     IAnalyticsEvent,
     IAnalyticsStats,
     IArticle,
+    IContactField,
     IContactFormConfiguration,
     IFeatureFlags,
     IPage,
@@ -19,6 +20,7 @@ export interface IArticleRepository {
 
 export interface IPageRepository {
     findAll(): Promise<IPage[]>
+    findById(id: string): Promise<IPage | undefined>
     findBySlug(slug: string): Promise<IPage | undefined>
     update(id: string, values: Partial<IPage>): Promise<IPage | undefined>
 }
@@ -37,6 +39,10 @@ export interface ISettingsRepository {
     updateFeatureFlag(key: keyof IFeatureFlags, enabled: boolean): Promise<IFeatureFlags>
     getContactFormConfiguration(): Promise<IContactFormConfiguration>
     updateContactFormConfiguration(values: Partial<IContactFormConfiguration>): Promise<IContactFormConfiguration>
+    createContactField(field: Omit<IContactField, 'id' | 'order'>): Promise<IContactFormConfiguration>
+    updateContactField(id: string, values: Partial<IContactField>): Promise<IContactFormConfiguration | undefined>
+    deleteContactField(id: string): Promise<boolean>
+    reorderContactField(id: string, direction: 'up' | 'down'): Promise<IContactFormConfiguration | undefined>
 }
 
 export interface IAnalyticsRepository {

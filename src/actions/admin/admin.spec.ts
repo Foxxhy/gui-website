@@ -22,28 +22,21 @@ jest.mock('@/services', () => ({
         canPerform: jest.fn(),
     },
     serviceContact: {
-        updateConfiguration: jest.fn(),
+        mutateFromAdminForm: jest.fn(),
     },
     serviceContent: {
-        createArticle: jest.fn(),
-        updateArticle: jest.fn(),
-        updatePage: jest.fn(),
-        getPages: jest.fn(),
+        mutateArticleFromFormData: jest.fn(),
+        mutatePageFromFormData: jest.fn(),
     },
     serviceFeature: {
         updateFlag: jest.fn(),
     },
     serviceGetCurrentSession: jest.fn(),
     serviceTag: {
-        getTags: jest.fn(),
-        createTag: jest.fn(),
-        updateTag: jest.fn(),
-        deleteTag: jest.fn(),
+        mutateFromFormData: jest.fn(),
     },
     serviceUser: {
-        createUser: jest.fn(),
-        updateUser: jest.fn(),
-        deleteUser: jest.fn(),
+        mutateFromFormData: jest.fn(),
     },
 }))
 
@@ -129,190 +122,92 @@ describe('actionSubmitAdminMutation', () => {
         })
     })
 
-    it('creates an article with selected tags', async () => {
+    it('delegates article mutations to serviceContent', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceTag.getTags).mockResolvedValue([
-            { id: 'tag-1', name: 'Tech' },
-            { id: 'tag-2', name: 'News' },
-            { id: 'tag-3', name: 'Other' },
-        ] as never)
-        jest.mocked(serviceContent.createArticle).mockResolvedValue({
+        jest.mocked(serviceContent.mutateArticleFromFormData).mockResolvedValue({
             success: true,
             message: 'Article créé.',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'articles',
-                operation: 'modifiée',
-                title: 'Mon article',
-                tags: ['tag-1', 'tag-3'],
-            })
-        )
+        const formData = createFormData({
+            area: 'articles',
+            operation: 'modifiée',
+            title: 'Mon article',
+            tags: ['tag-1', 'tag-3'],
+        })
 
-        expect(serviceContent.createArticle).toHaveBeenCalledWith(
-            expect.objectContaining({
-                title: 'Mon article',
-                tags: [
-                    { id: 'tag-1', name: 'Tech' },
-                    { id: 'tag-3', name: 'Other' },
-                ],
-            }),
-            session.user
-        )
+        const result = await actionSubmitAdminMutation(undefined, formData)
+
+        expect(serviceContent.mutateArticleFromFormData).toHaveBeenCalledWith(formData, session.user)
         expect(result).toEqual({ success: true, message: 'Article créé.' })
     })
 
-    it('creates a tag when no tag id is provided', async () => {
+    it('delegates tag mutations to serviceTag', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceTag.createTag).mockResolvedValue({
+        jest.mocked(serviceTag.mutateFromFormData).mockResolvedValue({
             success: true,
             message: 'Tag créé.',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'tags',
-                operation: 'créé',
-                name: 'Tech',
-                slug: 'tech',
-                style: 'green',
-                description: 'Technologie',
-            })
-        )
-
-        expect(serviceTag.createTag).toHaveBeenCalledWith({
+        const formData = createFormData({
+            area: 'tags',
+            operation: 'créé',
             name: 'Tech',
             slug: 'tech',
             style: 'green',
             description: 'Technologie',
         })
+
+        const result = await actionSubmitAdminMutation(undefined, formData)
+
+        expect(serviceTag.mutateFromFormData).toHaveBeenCalledWith(formData, 'créé')
         expect(result).toEqual({ success: true, message: 'Tag créé.' })
     })
 
-    it('updates a page', async () => {
+    it('delegates page mutations to serviceContent and revalidates public pages', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceContent.getPages).mockResolvedValue([
-            {
-                id: 'page-home',
-                title: 'Accueil',
-                slug: 'accueil',
-                content: 'Ancien contenu',
-                sections: [
-                    { id: 'home-hero', type: 'hero', title: 'Association POC', content: 'Intro', order: 1 },
-                ],
-                seo: {},
-                createdAt: '2026-01-01T09:00:00.000Z',
-                updatedAt: '2026-01-01T09:00:00.000Z',
-            },
-        ])
-        jest.mocked(serviceContent.updatePage).mockResolvedValue({
+        jest.mocked(serviceContent.mutatePageFromFormData).mockResolvedValue({
             success: true,
             message: 'Page enregistrée.',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'pages',
-                id: 'page-home',
-                title: 'Accueil',
-                content: 'Contenu',
-                'section-home-hero-title': 'Nouveau titre',
-                'section-home-hero-content': 'Nouvelle intro',
-            })
-        )
+        const formData = createFormData({
+            area: 'pages',
+            id: 'page-home',
+            title: 'Accueil',
+            content: 'Contenu',
+        })
 
-        expect(serviceContent.updatePage).toHaveBeenCalledWith(
-            'page-home',
-            expect.objectContaining({
-                area: 'pages',
-                title: 'Accueil',
-                content: 'Contenu',
-                sections: [
-                    {
-                        id: 'home-hero',
-                        type: 'hero',
-                        title: 'Nouveau titre',
-                        content: 'Nouvelle intro',
-                        order: 1,
-                    },
-                ],
-            })
-        )
+        const result = await actionSubmitAdminMutation(undefined, formData)
+
+        expect(serviceContent.mutatePageFromFormData).toHaveBeenCalledWith(formData)
         expect(revalidatePath).toHaveBeenCalledWith('/')
         expect(revalidatePath).toHaveBeenCalledWith('/association')
         expect(revalidatePath).toHaveBeenCalledWith('/gestion-des-donnees')
         expect(result).toEqual({ success: true, message: 'Page enregistrée.' })
     })
 
-    it('rejects a page mutation when the page is missing', async () => {
+    it('delegates user mutations to serviceUser', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceContent.getPages).mockResolvedValue([])
-
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'pages',
-                id: 'page-missing',
-                title: 'Titre',
-                content: 'Contenu',
-            })
-        )
-
-        expect(serviceContent.updatePage).not.toHaveBeenCalled()
-        expect(result).toEqual({ success: false, message: 'Page introuvable.' })
-    })
-
-    it('updates a user when an id is provided', async () => {
-        jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
-        jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceUser.updateUser).mockResolvedValue({
+        jest.mocked(serviceUser.mutateFromFormData).mockResolvedValue({
             success: true,
             message: 'Utilisateur modifié.',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'users',
-                id: 'user-1',
-                role: 'editor',
-            })
-        )
-
-        expect(serviceUser.updateUser).toHaveBeenCalledWith(
-            'user-1',
-            expect.objectContaining({ area: 'users', id: 'user-1', role: 'editor' })
-        )
-        expect(result).toEqual({ success: true, message: 'Utilisateur modifié.' })
-    })
-
-    it('deletes a user when the operation is suppressed', async () => {
-        jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
-        jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceUser.deleteUser).mockResolvedValue({
-            success: true,
-            message: 'Utilisateur supprimé.',
+        const formData = createFormData({
+            area: 'users',
+            id: 'user-1',
+            role: 'editor',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'users',
-                operation: 'supprimé',
-                id: 'user-1',
-            })
-        )
+        const result = await actionSubmitAdminMutation(undefined, formData)
 
-        expect(serviceUser.deleteUser).toHaveBeenCalledWith('user-1')
-        expect(result).toEqual({ success: true, message: 'Utilisateur supprimé.' })
+        expect(serviceUser.mutateFromFormData).toHaveBeenCalledWith(formData, 'modifiée')
+        expect(result).toEqual({ success: true, message: 'Utilisateur modifié.' })
     })
 
     it('enables a feature and revalidates affected pages', async () => {
@@ -340,25 +235,23 @@ describe('actionSubmitAdminMutation', () => {
         expect(result).toEqual({ success: true, message: 'Feature activée.' })
     })
 
-    it('updates contact form configuration', async () => {
+    it('delegates contact form mutations to serviceContact', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
-        jest.mocked(serviceContact.updateConfiguration).mockResolvedValue({
+        jest.mocked(serviceContact.mutateFromAdminForm).mockResolvedValue({
             success: true,
             message: 'Configuration enregistrée.',
         })
 
-        const result = await actionSubmitAdminMutation(
-            undefined,
-            createFormData({
-                area: 'contactForm',
-                title: 'Nouveau titre',
-            })
-        )
+        const formData = createFormData({
+            area: 'contactForm',
+            operation: 'modifiée',
+            title: 'Nouveau titre',
+        })
 
-        expect(serviceContact.updateConfiguration).toHaveBeenCalledWith(
-            expect.objectContaining({ area: 'contactForm', title: 'Nouveau titre' })
-        )
+        const result = await actionSubmitAdminMutation(undefined, formData)
+
+        expect(serviceContact.mutateFromAdminForm).toHaveBeenCalledWith(formData, 'modifiée')
         expect(result).toEqual({ success: true, message: 'Configuration enregistrée.' })
     })
 })

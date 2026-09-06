@@ -6,11 +6,10 @@ import {
     AdminChangeUserPasswordForm,
     AdminMutationForm,
 } from '@/components/forms'
+import { UserFormFields } from '@/components/admin/user-form-fields'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
     Sheet,
     SheetContent,
@@ -33,37 +32,6 @@ const roleLabels: Record<IRole, string> = {
     [IRole.EDITOR]: 'Éditeur',
     [IRole.BLOCKED]: 'Bloqué',
 }
-
-const UserFormFields = ({ user }: { user?: IUser }) => (
-    <>
-        {user && <input name="id" type="hidden" value={user.id} />}
-        <div className="space-y-2">
-            <Label htmlFor="name">Nom</Label>
-            <Input defaultValue={user?.name} id="name" name="name" required />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input defaultValue={user?.email} id="email" name="email" required type="email" />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="pseudonym">Pseudonyme</Label>
-            <Input defaultValue={user?.pseudonym} id="pseudonym" name="pseudonym" required />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="role">Rôle</Label>
-            <select
-                className="flex h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm"
-                defaultValue={user?.role ?? IRole.EDITOR}
-                id="role"
-                name="role"
-            >
-                <option value={IRole.EDITOR}>Éditeur</option>
-                <option value={IRole.ADMIN}>Administrateur</option>
-                <option value={IRole.BLOCKED}>Bloqué</option>
-            </select>
-        </div>
-    </>
-)
 
 export const UserAdminPanel = ({
     users,
