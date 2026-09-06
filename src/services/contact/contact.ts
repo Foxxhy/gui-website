@@ -1,4 +1,4 @@
-import { contactFormConfiguration } from '@/mocks'
+import { getRepositories } from '@/repositories'
 import { serviceAnalytics } from '@/services/analytics'
 import { serviceValidationLimits, serviceIsValidEmail, serviceToTrimmedString } from '@/services/validation'
 import type {
@@ -12,14 +12,18 @@ const sortedFields = (fields: IContactField[]) =>
     [...fields].sort((first, second) => first.order - second.order)
 
 export const serviceContact = {
-    getConfiguration: async (): Promise<IContactFormConfiguration> => ({
-        ...contactFormConfiguration,
-        fields: sortedFields(contactFormConfiguration.fields),
-    }),
+    getConfiguration: async (): Promise<IContactFormConfiguration> => {
+        const configuration = await getRepositories().settings.getContactFormConfiguration()
+        return {
+            ...configuration,
+            fields: sortedFields(configuration.fields),
+        }
+    },
     submit: async (formData: FormData): Promise<IActionResult> => {
+        const configuration = await getRepositories().settings.getContactFormConfiguration()
         const errors: IFieldErrors = {}
 
-        for (const field of contactFormConfiguration.fields) {
+        for (const field of configuration.fields) {
             const limit = field.type === 'textarea' ? serviceValidationLimits.message : serviceValidationLimits.name
             const rawValue = formData.get(field.technicalName)
             const value = serviceToTrimmedString(rawValue, limit)
@@ -51,7 +55,7 @@ export const serviceContact = {
             success: true,
             message: 'Votre message a été enregistré par la simulation. Aucun e-mail n’a été envoyé.',
         }
-        serviceAnalytics.trackEvent('contact-submission', '/contact')
+        await serviceAnalytics.trackEvent('contact-submission', '/contact')
         return result
     },
     simulateConfigurationMutation: async (): Promise<IActionResult> => ({

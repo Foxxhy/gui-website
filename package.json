@@ -10,10 +10,12 @@
         "test:watch": "jest --watch",
         "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
         "lint": "biome lint",
-        "format": "biome format --write"
+        "format": "biome format --write",
+        "db:ping": "node scripts/db-ping.mjs"
     },
     "dependencies": {
         "marked": "^18.0.11",
+        "mongodb": "^7.6.0",
         "next": "16.3.4",
         "react": "19.2.8",
         "react-dom": "19.2.8",
