@@ -21,6 +21,10 @@ export const serviceUser = {
     getUsers: async (): Promise<IUser[]> => getRepositories().users.findUsers(),
     getUserById: async (id: string): Promise<IUser | undefined> =>
         getRepositories().users.findUserById(id),
+    getAccountLoginByUserId: async (userId: string): Promise<string | undefined> => {
+        const account = await getRepositories().users.findAccountByUserId(userId)
+        return account?.login
+    },
     createUser: async (values: Partial<IUser>): Promise<IActionResult<IUser>> => {
         const validation = validateUser(values)
         if (validation) return validation as IActionResult<IUser>
