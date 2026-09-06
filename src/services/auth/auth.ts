@@ -24,7 +24,9 @@ export const serviceAuth = {
         if (!account) return undefined
         const isValid = await servicePasswordHashing.verifyPassword(password, account.passwordHash)
         if (!isValid) return undefined
-        return getRepositories().users.findUserById(account.userId)
+        const user = await getRepositories().users.findUserById(account.userId)
+        if (!user || user.role === IRole.BLOCKED) return undefined
+        return user
     },
     getSessionFromToken: async (token?: string): Promise<ISession | undefined> => {
         const payload = parseSessionToken(token)

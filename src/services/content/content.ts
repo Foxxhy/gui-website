@@ -1,4 +1,5 @@
 import { getRepositories } from '@/repositories'
+import { serviceMapRepositoryErrorAs } from '@/services/repository-errors'
 import { parsePageSectionsFromFormData, validatePageSections } from '@/services/content/page-sections'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceReadFormString, serviceRequiredError } from '@/services/validation'
 import {
@@ -111,8 +112,14 @@ export const serviceContent = {
             createdAt: now,
             updatedAt: now,
         }
-        const created = await getRepositories().articles.create(article)
-        return { success: true, message: 'Article créé.', data: created }
+        try {
+            const created = await getRepositories().articles.create(article)
+            return { success: true, message: 'Article créé.', data: created }
+        } catch (error) {
+            const mapped = serviceMapRepositoryErrorAs<IArticle>(error)
+            if (mapped) return mapped
+            throw error
+        }
     },
     updateArticle: async (id: string, values: Partial<IArticle>, author?: IUser): Promise<IActionResult<IArticle>> => {
         const existing = await getRepositories().articles.findById(id)
@@ -122,24 +129,30 @@ export const serviceContent = {
         if (validation) return validation as IActionResult<IArticle>
 
         const now = new Date().toISOString()
-        const updated = await getRepositories().articles.update(id, {
-            title: typeof values.title === 'string' ? values.title.trim() : existing.title,
-            slug: values.slug ? serviceNormalizeSlug(values.slug) : existing.slug,
-            description: typeof values.description === 'string' ? values.description.trim() : existing.description,
-            content: typeof values.content === 'string' ? values.content.trim() : existing.content,
-            status: values.status ?? existing.status,
-            tags: values.tags ?? existing.tags,
-            author: author ?? existing.author,
-            publishedAt:
-                values.status === IStatus.PUBLISHED
-                    ? existing.publishedAt ?? now
-                    : values.status !== undefined
-                        ? undefined
-                        : existing.publishedAt,
-            updatedAt: now,
-        })
-        if (!updated) return { success: false, message: 'Article introuvable.' }
-        return { success: true, message: 'Article modifié.', data: updated }
+        try {
+            const updated = await getRepositories().articles.update(id, {
+                title: typeof values.title === 'string' ? values.title.trim() : existing.title,
+                slug: values.slug ? serviceNormalizeSlug(values.slug) : existing.slug,
+                description: typeof values.description === 'string' ? values.description.trim() : existing.description,
+                content: typeof values.content === 'string' ? values.content.trim() : existing.content,
+                status: values.status ?? existing.status,
+                tags: values.tags ?? existing.tags,
+                author: author ?? existing.author,
+                publishedAt:
+                    values.status === IStatus.PUBLISHED
+                        ? existing.publishedAt ?? now
+                        : values.status !== undefined
+                            ? undefined
+                            : existing.publishedAt,
+                updatedAt: now,
+            })
+            if (!updated) return { success: false, message: 'Article introuvable.' }
+            return { success: true, message: 'Article modifié.', data: updated }
+        } catch (error) {
+            const mapped = serviceMapRepositoryErrorAs<IArticle>(error)
+            if (mapped) return mapped
+            throw error
+        }
     },
     updatePage: async (id: string, values: Partial<IPage>): Promise<IActionResult<IPage>> => {
         const existing = await getRepositories().pages.findById(id)

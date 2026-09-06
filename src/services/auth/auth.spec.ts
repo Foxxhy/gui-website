@@ -13,6 +13,10 @@ describe('serviceAuth', () => {
         await expect(serviceAuth.authenticate({ login: 'admin', password: 'invalid' })).resolves.toBeUndefined()
     })
 
+    it('rejects blocked users at login', async () => {
+        await expect(serviceAuth.authenticate({ login: 'blocked', password: 'blocked' })).resolves.toBeUndefined()
+    })
+
     it('does not create a session for a blocked user token', async () => {
         await expect(serviceAuth.getSessionFromToken(undefined)).resolves.toBeUndefined()
     })

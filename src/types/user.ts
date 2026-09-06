@@ -30,6 +30,10 @@ export interface IUserRepository {
   findAccountByUserId: (userId: string) => Promise<IUserCredentials | undefined>
   updatePasswordHash: (userId: string, passwordHash: string) => Promise<boolean>
   createUser: (user: IUser) => Promise<IUser>
+  createUserWithAccount: (
+    user: IUser,
+    credentials: Pick<IUserCredentials, 'login' | 'passwordHash'>
+  ) => Promise<IUser>
   updateUser: (id: string, values: Partial<IUser>) => Promise<IUser | undefined>
   deleteUser: (id: string) => Promise<boolean>
 }

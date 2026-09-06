@@ -27,12 +27,12 @@ describe('getRepositories', () => {
         })
     })
 
-    it('throws when mongodb repositories are requested before implementation', async () => {
+    it('returns mongodb repositories when configured', async () => {
         process.env.DATA_SOURCE = 'mongodb'
         process.env.MONGODB_URI = 'mongodb+srv://user:secret@cluster0.example.mongodb.net/'
         const { getRepositories } = await import('./factory')
-        await expect(getRepositories().articles.findAll()).rejects.toThrow(
-            'Le repository MongoDB « articles » n’est pas encore implémenté.'
-        )
+        const repositories = getRepositories()
+        expect(repositories.users.createUserWithAccount).toBeDefined()
+        expect(repositories.articles.findAll).toBeDefined()
     })
 })
