@@ -1,5 +1,17 @@
 import Link from 'next/link'
 import { AdminMutationForm, AdminPreviewButton } from '@/components'
+import { AdminPageHeader, AdminTabs, FeatureFlagForm } from '@/components/admin'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table'
 import { serviceContent, serviceFeature } from '@/services'
 
 export default async function AdministrationArticlesPage() {
@@ -7,5 +19,67 @@ export default async function AdministrationArticlesPage() {
         serviceContent.getAllArticles(),
         serviceFeature.getFlags(),
     ])
-    return <main><h1>Gestion des articles</h1><section><h2>Statut</h2><AdminMutationForm area="features" operation="Mettre à jour le statut"><input type="hidden" name="feature" value="articles" /><p><input id="articles-enabled" type="checkbox" name="enabled" value="true" defaultChecked={features.articles} /><input type="hidden" name="enabled" value="false" /><label htmlFor="articles-enabled">Module Articles activé</label></p></AdminMutationForm></section><AdminPreviewButton preview={{ kind: 'articleList', articles }} /><p><Link href="/administration/articles/nouveau">Créer un article</Link></p><table><caption>Articles mockés</caption><thead><tr><th>Titre</th><th>Statut</th><th>Actions</th></tr></thead><tbody>{articles.map((article) => <tr key={article.id}><td>{article.title}</td><td>{article.status}</td><td><Link href={`/administration/articles/${article.id}`}>Consulter / modifier</Link><AdminMutationForm area="articles" operation="supprimé"><input type="hidden" name="id" value={article.id} /></AdminMutationForm></td></tr>)}</tbody></table></main>
+
+    return (
+        <>
+            <AdminPageHeader
+                description="Gérez la liste des articles et la configuration du module."
+                title="Gestion des articles"
+            />
+            <AdminTabs
+                configuration={<FeatureFlagForm enabled={features.articles} feature="articles" />}
+                content={
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between gap-4">
+                            <CardTitle>Liste des articles</CardTitle>
+                            <Button nativeButton={false} render={<Link href="/administration/articles/nouveau" />}>
+                                Créer un article
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <AdminPreviewButton preview={{ kind: 'articleList', articles }} />
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Titre</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {articles.map((article) => (
+                                        <TableRow key={article.id}>
+                                            <TableCell>{article.title}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{article.status}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        nativeButton={false}
+                                                        render={
+                                                            <Link
+                                                                href={`/administration/articles/${article.id}`}
+                                                            />
+                                                        }
+                                                        size="sm"
+                                                        variant="outline"
+                                                    >
+                                                        Consulter / modifier
+                                                    </Button>
+                                                    <AdminMutationForm area="articles" operation="supprimé">
+                                                        <input name="id" type="hidden" value={article.id} />
+                                                    </AdminMutationForm>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                }
+            />
+        </>
+    )
 }

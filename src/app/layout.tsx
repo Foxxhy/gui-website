@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { configApp } from '@/configs'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import './globals.css'
 
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
     return (
         <html lang="fr" className={cn('font-sans', geist.variable)}>
-            <body>{children}</body>
+            <body>
+                <TooltipProvider>{children}</TooltipProvider>
+            </body>
         </html>
     )
 }

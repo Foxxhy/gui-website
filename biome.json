@@ -34,6 +34,27 @@
             "react": "recommended"
         }
     },
+    "overrides": [
+        {
+            "includes": ["src/components/ui/**"],
+            "linter": {
+                "rules": {
+                    "a11y": {
+                        "noLabelWithoutControl": "off"
+                    },
+                    "correctness": {
+                        "useExhaustiveDependencies": "off"
+                    },
+                    "style": {
+                        "useImportType": "off"
+                    },
+                    "suspicious": {
+                        "noDocumentCookie": "off"
+                    }
+                }
+            }
+        }
+    ],
     "assist": {
         "actions": {
             "source": {
