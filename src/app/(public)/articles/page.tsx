@@ -1,9 +1,4 @@
-import {
-    ArticleFilters,
-    ArticleList,
-    ArticlePagination,
-    PublicNavigation,
-} from '@/components'
+import { ArticleFilters, ArticleList, ArticlePagination } from '@/components'
 import { AnalyticsTracker } from '@/analytics'
 import { configApp } from '@/configs'
 import { serviceContent, serviceFeature, serviceTag } from '@/services'
@@ -39,15 +34,17 @@ export default async function ArticlesPage({ searchParams }: PageProps<'/article
     return (
         <>
             <AnalyticsTracker path="/articles" />
-            <PublicNavigation features={features} />
-            <main>
-                <h1>Articles</h1>
+            <div className="space-y-6">
+                <h1 className="font-heading text-3xl font-semibold">Articles</h1>
                 <ArticleFilters search={search} selectedTagSlugs={tagSlugs} tags={tags} />
                 {pagination.total === 0 ? (
                     <p>Aucun article ne correspond à votre recherche.</p>
                 ) : (
                     <>
-                        <p>{pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé{pagination.total > 1 ? 's' : ''}.</p>
+                        <p>
+                            {pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé
+                            {pagination.total > 1 ? 's' : ''}.
+                        </p>
                         <ArticleList articles={pagination.articles} />
                         <ArticlePagination
                             pagination={pagination}
@@ -56,7 +53,7 @@ export default async function ArticlesPage({ searchParams }: PageProps<'/article
                         />
                     </>
                 )}
-            </main>
+            </div>
         </>
     )
 }

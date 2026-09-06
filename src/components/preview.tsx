@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { IContactFieldType, IStatus, type IArticle, type IContactField, type IContactFormConfiguration, type IPage, type ITag } from '@/types'
-import { ArticleList, ContactField, PageSections } from './public'
+import { ArticleList, ContactField, PageSections } from './public/content'
+import { TagBadge } from './public/tag-badge'
 
 export type IAdminPreview =
     | { kind: 'article'; article: IArticle }
@@ -41,7 +42,24 @@ const PreviewContactForm = ({ configuration, fieldId, values }: { configuration:
     return <><h2>{configuration.title}</h2>{configuration.description && <p>{configuration.description}</p>}{fields.slice().sort((first, second) => first.order - second.order).map((field) => <ContactField key={field.id} field={field} disabled />)}<button type="button" onClick={() => setMessage('Simulation réussie : aucun message n’a été envoyé.')}>Simuler l’envoi</button>{message && <output aria-live="polite">{message}</output>}</>
 }
 
-const PreviewTag = ({ tag, values }: { tag: ITag; values: FormData }) => <section><h2>Exemple d’affichage</h2><span className="tag" data-tag-style={getValue(values, 'style', tag.style)}>{getValue(values, 'name', tag.name) || 'Nom du tag'}</span><p><strong>Slug :</strong> {getValue(values, 'slug', tag.slug) || 'non renseigné'}</p>{getValue(values, 'description', tag.description) && <p>{getValue(values, 'description', tag.description)}</p>}</section>
+const PreviewTag = ({ tag, values }: { tag: ITag; values: FormData }) => {
+    const previewTag: ITag = {
+        ...tag,
+        name: getValue(values, 'name', tag.name) || 'Nom du tag',
+        slug: getValue(values, 'slug', tag.slug),
+        style: getValue(values, 'style', tag.style),
+        description: getValue(values, 'description', tag.description),
+    }
+
+    return (
+        <section>
+            <h2>Exemple d’affichage</h2>
+            <TagBadge tag={previewTag} />
+            <p><strong>Slug :</strong> {previewTag.slug || 'non renseigné'}</p>
+            {previewTag.description && <p>{previewTag.description}</p>}
+        </section>
+    )
+}
 
 const PreviewContactConfiguration = ({ configuration }: { configuration: IContactFormConfiguration }) => <><h2>{configuration.title}</h2>{configuration.description && <p>{configuration.description}</p>}{configuration.fields.slice().sort((first, second) => first.order - second.order).map((field) => <ContactField key={field.id} field={field} disabled />)}</>
 

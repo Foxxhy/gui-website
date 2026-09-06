@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { getTagBadgeVariant } from '@/components/public/tag-badge'
 import type { ITag } from '@/types'
 
 const createArticlesUrl = (search: string, tagSlugs: string[]) => {
@@ -65,11 +68,14 @@ export const ArticleFilters = ({
                     return (
                         <button
                             aria-pressed={selected}
+                            className="inline-flex"
                             key={tag.id}
                             onClick={() => updateTags(tag.slug)}
                             type="button"
                         >
-                            {tag.name}
+                            <Badge variant={selected ? getTagBadgeVariant(tag.style) : 'outline'}>
+                                {tag.name}
+                            </Badge>
                         </button>
                     )
                 })}
@@ -81,14 +87,16 @@ export const ArticleFilters = ({
                         {tags
                             .filter((tag) => selectedTagSlugs.includes(tag.slug))
                             .map((tag) => (
-                                <li key={tag.id}>
-                                    {tag.name}{' '}
-                                    <button
+                                <li key={tag.id} className="flex items-center gap-2">
+                                    <Badge variant={getTagBadgeVariant(tag.style)}>{tag.name}</Badge>
+                                    <Button
                                         onClick={() => updateTags(tag.slug)}
+                                        size="sm"
                                         type="button"
+                                        variant="ghost"
                                     >
                                         Retirer
-                                    </button>
+                                    </Button>
                                 </li>
                             ))}
                     </ul>

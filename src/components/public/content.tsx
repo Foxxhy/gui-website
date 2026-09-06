@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import type {
     IArticle,
     IArticlePagination,
@@ -7,6 +6,9 @@ import type {
     IFeatureFlags,
     IPageSection,
 } from '@/types'
+import { Button } from '@/components/ui/button'
+import { ArticleTags } from './tag-badge'
+import { VisualMock } from './visual-mock'
 
 const enabledFeatures: IFeatureFlags = {
     home: true,
@@ -14,33 +16,42 @@ const enabledFeatures: IFeatureFlags = {
     contact: true,
 }
 
-export const ArticleTags = ({ tags }: Pick<IArticle, 'tags'>) => tags?.length ? <p>Tags : {tags.map((tag) => <span key={tag.id} className="tag" data-tag-style={tag.style}>[{tag.name}] </span>)}</p> : null
-
-export const PublicNavigation = ({ features }: { features: IFeatureFlags }) => (
-    <nav aria-label="Navigation principale">
-        <ul>
-            {features.home && <li><Link href="/">Accueil</Link></li>}
-            {features.articles && <li><Link href="/articles">Articles</Link></li>}
-            <li><Link href="/association">L’association</Link></li>
-            {features.contact && <li><Link href="/contact">Contact</Link></li>}
-            <li><Link href="/connexion">Connexion</Link></li>
-        </ul>
-    </nav>
-)
+export { ArticleTags } from './tag-badge'
 
 export const ArticleList = ({ articles }: { articles: IArticle[] }) => (
-    <ul>
+    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((article) => (
             <li key={article.id}>
-                <article>
-                    <h2><Link href={`/articles/${article.slug}`}>{article.title}</Link></h2>
-                    {article.description && <p>{article.description}</p>}
-                    {article.cover && <Image src={article.cover.url} alt={article.cover.alt} width={article.cover.width ?? 600} height={article.cover.height ?? 400} />}
-                    <p>Catégorie : {article.category}</p>
-                    <ArticleTags tags={article.tags} />
-                    {article.author && <p>Auteur : {article.author.pseudonym}</p>}
-                    {article.publishedAt && <p>Publié le : {new Date(article.publishedAt).toLocaleDateString('fr-FR')}</p>}
-                    <Link href={`/articles/${article.slug}`}>Lire l’article</Link>
+                <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+                    <VisualMock className="aspect-[16/10] rounded-none border-0" />
+                    <div className="flex flex-1 flex-col gap-3 p-4">
+                        <h2 className="font-heading text-lg font-semibold">
+                            <Link className="hover:underline" href={`/articles/${article.slug}`}>
+                                {article.title}
+                            </Link>
+                        </h2>
+                        {article.description && (
+                            <p className="text-sm text-muted-foreground">{article.description}</p>
+                        )}
+                        <ArticleTags tags={article.tags} />
+                        <div className="mt-auto space-y-1 text-sm text-muted-foreground">
+                            {article.category && <p>Catégorie : {article.category}</p>}
+                            {article.author && <p>Auteur : {article.author.pseudonym}</p>}
+                            {article.publishedAt && (
+                                <p>
+                                    Publié le :{' '}
+                                    {new Date(article.publishedAt).toLocaleDateString('fr-FR')}
+                                </p>
+                            )}
+                        </div>
+                        <Button
+                            className="w-full sm:w-auto"
+                            nativeButton={false}
+                            render={<Link href={`/articles/${article.slug}`} />}
+                        >
+                            Lire l’article
+                        </Button>
+                    </div>
                 </article>
             </li>
         ))}
@@ -67,7 +78,7 @@ export const ArticlePagination = ({
     if (pagination.totalPages <= 1) return null
 
     return (
-        <nav aria-label="Pagination des articles">
+        <nav aria-label="Pagination des articles" className="flex flex-wrap items-center gap-4">
             {pagination.page > 1 ? (
                 <Link href={createArticlesUrl(search, tagSlugs, pagination.page - 1)}>
                     ← Précédent
@@ -75,7 +86,7 @@ export const ArticlePagination = ({
             ) : (
                 <span aria-disabled="true">← Précédent</span>
             )}
-            <ol>
+            <ol className="flex flex-wrap gap-2">
                 {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map(
                     (page) => (
                         <li key={page}>
@@ -119,18 +130,45 @@ export const PageSections = ({
     <>
         {[...sections].sort((first, second) => first.order - second.order).map((section) => {
             if (section.type === 'hero') {
-                return <header key={section.id}><h1>{section.title}</h1>{section.content && <p>{section.content}</p>}</header>
+                return (
+                    <header key={section.id} className="space-y-4">
+                        <VisualMock className="max-w-xl" />
+                        <h1 className="font-heading text-3xl font-semibold">{section.title}</h1>
+                        {section.content && <p className="text-muted-foreground">{section.content}</p>}
+                    </header>
+                )
             }
             if (section.type === 'text') {
-                return <section key={section.id}><h2>{section.title}</h2><p>{section.content}</p></section>
+                return (
+                    <section key={section.id} className="space-y-3">
+                        <h2 className="font-heading text-2xl font-semibold">{section.title}</h2>
+                        <p>{section.content}</p>
+                    </section>
+                )
             }
             if (section.type === 'featured-articles') {
                 if (!features.articles) return null
                 const selected = featuredArticles.filter((article) => section.articleSlugs.includes(article.slug))
-                return <section key={section.id}><h2>{section.title}</h2><ArticleList articles={selected} /></section>
+                return (
+                    <section key={section.id} className="space-y-4">
+                        <h2 className="font-heading text-2xl font-semibold">{section.title}</h2>
+                        <ArticleList articles={selected} />
+                    </section>
+                )
             }
             if (section.href === '/contact' && !features.contact) return null
-            return <section key={section.id}><h2>{section.title}</h2>{section.content && <p>{section.content}</p>}<Link href={section.href}>{section.label}</Link></section>
+            return (
+                <section key={section.id} className="space-y-3">
+                    <h2 className="font-heading text-2xl font-semibold">{section.title}</h2>
+                    {section.content && <p>{section.content}</p>}
+                    <Button
+                        nativeButton={false}
+                        render={<Link href={section.href} />}
+                    >
+                        {section.label}
+                    </Button>
+                </section>
+            )
         })}
     </>
 )
