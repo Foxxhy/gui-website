@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { IFeatureFlags } from '@/types'
 import { filterPublicLinks, publicNavLinks } from './navigation'
 import { PublicMobileNav } from './public-mobile-nav'
+import { PublicNavLinks } from './public-nav-links'
 import { VisualMock } from './visual-mock'
 
 export const PublicHeader = ({
@@ -30,29 +29,9 @@ export const PublicHeader = ({
 
                 <nav
                     aria-label="Navigation principale"
-                    className="hidden items-center gap-1 md:flex"
+                    className="hidden md:block"
                 >
-                    <ul className="flex items-center gap-1">
-                        {links.map((link) => (
-                            <li key={link.href}>
-                                {link.highlighted ? (
-                                    <Link
-                                        className={cn(buttonVariants({ variant: 'default' }))}
-                                        href={link.href}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ) : (
-                                    <Link
-                                        className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
-                                        href={link.href}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                    <PublicNavLinks layout="horizontal" links={links} />
                 </nav>
 
                 <PublicMobileNav links={links} />

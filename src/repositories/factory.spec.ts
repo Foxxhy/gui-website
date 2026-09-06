@@ -17,6 +17,16 @@ describe('getRepositories', () => {
         expect(articles.length).toBeGreaterThan(0)
     })
 
+    it('exposes users through the factory', async () => {
+        delete process.env.DATA_SOURCE
+        const { getRepositories } = await import('./factory')
+        const repositories = getRepositories()
+        await expect(repositories.users.findAccountByLogin('admin')).resolves.toMatchObject({
+            userId: 'user-admin',
+            login: 'admin',
+        })
+    })
+
     it('throws when mongodb repositories are requested before implementation', async () => {
         process.env.DATA_SOURCE = 'mongodb'
         process.env.MONGODB_URI = 'mongodb+srv://user:secret@cluster0.example.mongodb.net/'

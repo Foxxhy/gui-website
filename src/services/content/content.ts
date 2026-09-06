@@ -1,6 +1,6 @@
 import { getRepositories } from '@/repositories'
 import { validatePageSections } from '@/services/content/page-sections'
-import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug } from '@/services/validation'
+import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError } from '@/services/validation'
 import {
     IStatus,
     type IActionResult,
@@ -17,9 +17,9 @@ const validateArticle = async (values: Partial<IArticle>): Promise<IActionResult
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
     const errors = serviceFieldErrors(
-        ['title', !rawTitle ? 'Le titre est obligatoire.' : rawTitle.length > serviceValidationLimits.title ? 'Le titre est trop long.' : undefined],
+        ['title', serviceRequiredError(rawTitle, 'Le titre est obligatoire.') ?? serviceMaxLengthError(rawTitle, serviceValidationLimits.title, 'Le titre est trop long.')],
         ['slug', !serviceIsValidSlug(slug) ? 'Le slug est invalide.' : undefined],
-        ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > serviceValidationLimits.content ? 'Le contenu est trop long.' : undefined],
+        ['content', serviceRequiredError(rawContent, 'Le contenu est obligatoire.') ?? serviceMaxLengthError(rawContent, serviceValidationLimits.content, 'Le contenu est trop long.')],
         ['status', values.status && !Object.values(IStatus).includes(values.status) ? 'Le statut est invalide.' : undefined],
     )
     if (allArticles.some((article) => article.slug === slug && article.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
@@ -32,9 +32,9 @@ const validatePage = async (values: Partial<IPage>): Promise<IActionResult<Parti
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
     const errors = serviceFieldErrors(
-        ['title', !rawTitle ? 'Le titre est obligatoire.' : rawTitle.length > serviceValidationLimits.title ? 'Le titre est trop long.' : undefined],
+        ['title', serviceRequiredError(rawTitle, 'Le titre est obligatoire.') ?? serviceMaxLengthError(rawTitle, serviceValidationLimits.title, 'Le titre est trop long.')],
         ['slug', values.slug !== undefined && !serviceIsValidSlug(slug) ? 'Le slug est invalide.' : undefined],
-        ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > serviceValidationLimits.content ? 'Le contenu est trop long.' : undefined],
+        ['content', serviceRequiredError(rawContent, 'Le contenu est obligatoire.') ?? serviceMaxLengthError(rawContent, serviceValidationLimits.content, 'Le contenu est trop long.')],
     )
     if (values.slug && allPages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
     return Object.keys(errors).length ? { success: false, message: 'La page contient des erreurs.', errors } : undefined

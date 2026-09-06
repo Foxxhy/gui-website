@@ -1,3 +1,4 @@
+import { createSessionToken } from '@/services/auth/session-token'
 import { IRole } from '@/types'
 import { serviceAuth } from './auth'
 
@@ -14,6 +15,13 @@ describe('serviceAuth', () => {
 
     it('does not create a session for a blocked user token', async () => {
         await expect(serviceAuth.getSessionFromToken(undefined)).resolves.toBeUndefined()
+    })
+
+    it('creates a session for a valid token and rejects blocked users', async () => {
+        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-admin'))).resolves.toMatchObject({
+            user: { id: 'user-admin' },
+        })
+        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-blocked'))).resolves.toBeUndefined()
     })
 
     it.each([

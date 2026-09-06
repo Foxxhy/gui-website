@@ -1,8 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { MenuIcon } from 'lucide-react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
     Sheet,
     SheetContent,
@@ -10,8 +9,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
 import type { IPublicNavLink } from './navigation'
+import { PublicNavLinks } from './public-nav-links'
 
 export const PublicMobileNav = ({ links }: { links: IPublicNavLink[] }) => (
     <Sheet>
@@ -31,31 +30,8 @@ export const PublicMobileNav = ({ links }: { links: IPublicNavLink[] }) => (
             <SheetHeader>
                 <SheetTitle>Navigation</SheetTitle>
             </SheetHeader>
-            <nav aria-label="Navigation principale">
-                <ul className="flex flex-col gap-2 px-4">
-                    {links.map((link) => (
-                        <li key={link.href}>
-                            {link.highlighted ? (
-                                <Link
-                                    className={cn(
-                                        buttonVariants({ variant: 'default' }),
-                                        'w-full justify-center'
-                                    )}
-                                    href={link.href}
-                                >
-                                    {link.label}
-                                </Link>
-                            ) : (
-                                <Link
-                                    className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
-                                    href={link.href}
-                                >
-                                    {link.label}
-                                </Link>
-                            )}
-                        </li>
-                    ))}
-                </ul>
+            <nav aria-label="Navigation principale" className="px-4">
+                <PublicNavLinks layout="vertical" links={links} />
             </nav>
         </SheetContent>
     </Sheet>

@@ -1,5 +1,5 @@
 import { getRepositories } from '@/repositories'
-import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug, serviceToTrimmedString } from '@/services/validation'
+import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError, serviceToTrimmedString } from '@/services/validation'
 import { TAG_STYLES, type IActionResult, type IFieldErrors, type ITag } from '@/types'
 
 type TagInput = Pick<ITag, 'name' | 'slug' | 'style'> & Pick<ITag, 'description'>
@@ -12,10 +12,10 @@ const validate = async (values: Partial<TagInput>, currentId?: string): Promise<
     const slug = serviceNormalizeSlug(values.slug)
     const style = serviceToTrimmedString(values.style, 32)
     const errors = serviceFieldErrors(
-        ['name', !name ? 'Le nom est obligatoire.' : rawName.length > serviceValidationLimits.name ? 'Le nom est trop long.' : undefined],
-        ['slug', !slug ? 'Le slug est obligatoire.' : !serviceIsValidSlug(slug) ? 'Le slug contient des caractères invalides.' : undefined],
+        ['name', serviceRequiredError(name, 'Le nom est obligatoire.') ?? serviceMaxLengthError(rawName, serviceValidationLimits.name, 'Le nom est trop long.')],
+        ['slug', serviceRequiredError(slug, 'Le slug est obligatoire.') ?? (!serviceIsValidSlug(slug) ? 'Le slug contient des caractères invalides.' : undefined)],
         ['style', !TAG_STYLES.includes(style as ITag['style']) ? 'Le style est invalide.' : undefined],
-        ['description', rawDescription.length > serviceValidationLimits.description ? 'La description est trop longue.' : undefined],
+        ['description', serviceMaxLengthError(rawDescription, serviceValidationLimits.description, 'La description est trop longue.')],
     )
     if (slug && allTags.some((tag) => tag.slug === slug && tag.id !== currentId)) {
         errors.slug = 'Ce slug est déjà utilisé.'

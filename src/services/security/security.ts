@@ -64,8 +64,3 @@ export const serviceValidateUploadMetadata = (
     if (!/^[a-zA-Z0-9._-]+$/.test(file.name)) return 'Nom de fichier non autorisé.'
     return undefined
 }
-
-export const serviceFutureAbuseControls = {
-    rateLimiting: 'À brancher sur un stockage partagé avant la production.',
-    antiSpam: 'Prévoir honeypot, CAPTCHA ou service spécialisé avant la production.',
-}

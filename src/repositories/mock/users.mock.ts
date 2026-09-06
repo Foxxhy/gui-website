@@ -50,5 +50,3 @@ export const repositoryUserMock: IUserRepository = {
         return true
     },
 }
-
-export const repositoryUser = repositoryUserMock

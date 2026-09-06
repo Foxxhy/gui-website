@@ -30,6 +30,15 @@ export const ADMINISTRATION_PERMISSIONS = {
 
 export type IServiceAdminArea = keyof typeof ADMINISTRATION_PERMISSIONS
 
+export const MUTATION_AREAS = [
+    'articles',
+    'pages',
+    'contactForm',
+    'tags',
+    'users',
+    'features',
+] as const satisfies readonly IServiceAdminArea[]
+
 export const canManageArea = (role: IRole, area: IServiceAdminArea): boolean => {
     if (role === IRole.BLOCKED) return false
     return (ADMINISTRATION_PERMISSIONS[area] as readonly IRole[]).includes(role)

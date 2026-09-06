@@ -2,8 +2,10 @@ import {
     serviceFieldErrors,
     serviceIsValidEmail,
     serviceIsValidSlug,
+    serviceMaxLengthError,
     serviceNormalizeSlug,
     serviceReadFormString,
+    serviceRequiredError,
     serviceToStrictBoolean,
     serviceToTrimmedString,
 } from './validation'
@@ -30,6 +32,13 @@ describe('validation utilities', () => {
 
     it('builds field errors without empty messages', () => {
         expect(serviceFieldErrors(['name', 'Nom obligatoire'], ['email', undefined])).toEqual({ name: 'Nom obligatoire' })
+    })
+
+    it('reports required and max-length validation errors', () => {
+        expect(serviceRequiredError('', 'Champ obligatoire')).toBe('Champ obligatoire')
+        expect(serviceRequiredError('ok', 'Champ obligatoire')).toBeUndefined()
+        expect(serviceMaxLengthError('abcdef', 3, 'Trop long')).toBe('Trop long')
+        expect(serviceMaxLengthError('abc', 3, 'Trop long')).toBeUndefined()
     })
 
     it('reads only string form values', () => {
