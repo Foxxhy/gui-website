@@ -57,6 +57,18 @@ const UserFormFields = ({ user }: { user?: IUser }) => (
                 <option value={IRole.BLOCKED}>Bloqué</option>
             </select>
         </div>
+        {!user && (
+            <>
+                <div className="space-y-2">
+                    <Label htmlFor="login">Identifiant de connexion</Label>
+                    <Input id="login" name="login" required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="password">Mot de passe initial</Label>
+                    <Input id="password" name="password" required type="password" />
+                </div>
+            </>
+        )}
     </>
 )
 

@@ -1,4 +1,5 @@
 import { getRepositories } from '@/repositories'
+import { serviceMapRepositoryErrorAs } from '@/services/repository-errors'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError, serviceToTrimmedString } from '@/services/validation'
 import { TAG_STYLES, type IActionResult, type IFieldErrors, type ITag } from '@/types'
 
@@ -39,8 +40,14 @@ export const serviceTag = {
             style: serviceToTrimmedString(values.style, 32) as ITag['style'],
             description: serviceToTrimmedString(values.description, serviceValidationLimits.description) || undefined,
         }
-        const created = await getRepositories().tags.create(tag)
-        return { success: true, message: 'Tag créé.', data: created }
+        try {
+            const created = await getRepositories().tags.create(tag)
+            return { success: true, message: 'Tag créé.', data: created }
+        } catch (error) {
+            const mapped = serviceMapRepositoryErrorAs<ITag>(error)
+            if (mapped) return mapped
+            throw error
+        }
     },
     updateTag: async (id: string, values: Partial<TagInput>): Promise<IActionResult<ITag>> => {
         const tag = await getRepositories().tags.findById(id)
@@ -49,14 +56,20 @@ export const serviceTag = {
         if (Object.keys(errors).length > 0) {
             return { success: false, message: 'Le tag contient des erreurs.', errors }
         }
-        const updated = await getRepositories().tags.update(id, {
-            name: serviceToTrimmedString(values.name, serviceValidationLimits.name),
-            slug: serviceNormalizeSlug(values.slug),
-            style: serviceToTrimmedString(values.style, 32) as ITag['style'],
-            description: serviceToTrimmedString(values.description, serviceValidationLimits.description) || undefined,
-        })
-        if (!updated) return { success: false, message: 'Tag introuvable.' }
-        return { success: true, message: 'Tag modifié.', data: updated }
+        try {
+            const updated = await getRepositories().tags.update(id, {
+                name: serviceToTrimmedString(values.name, serviceValidationLimits.name),
+                slug: serviceNormalizeSlug(values.slug),
+                style: serviceToTrimmedString(values.style, 32) as ITag['style'],
+                description: serviceToTrimmedString(values.description, serviceValidationLimits.description) || undefined,
+            })
+            if (!updated) return { success: false, message: 'Tag introuvable.' }
+            return { success: true, message: 'Tag modifié.', data: updated }
+        } catch (error) {
+            const mapped = serviceMapRepositoryErrorAs<ITag>(error)
+            if (mapped) return mapped
+            throw error
+        }
     },
     deleteTag: async (id: string): Promise<IActionResult> => {
         const deleted = await getRepositories().tags.delete(id)

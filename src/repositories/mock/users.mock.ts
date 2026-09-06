@@ -31,6 +31,15 @@ export const repositoryUserMock: IUserRepository = {
         users.push(user)
         return user
     },
+    createUserWithAccount: async (user, credentials) => {
+        users.push(user)
+        accounts.push({
+            user,
+            login: credentials.login,
+            passwordHash: credentials.passwordHash,
+        })
+        return user
+    },
     updateUser: async (id, values) => {
         const user = users.find((candidate) => candidate.id === id)
         if (!user) return undefined

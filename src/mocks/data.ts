@@ -59,6 +59,11 @@ export const accounts: IMockAccount[] = [
         login: 'editor',
         passwordHash: 'scrypt:IJylgnI7fwg9KWB6UnkJOQ:M-kbOmvy1dBDV19byHIDiWhDzRH-iteLyLhHoKfetAgJpdeTMPlDAI9gTCWvpwVMHf4OismXJARs-35SWvDPew',
     },
+    {
+        user: users[2],
+        login: 'blocked',
+        passwordHash: 'scrypt:MmQ-1fKcGFtQq74qOZvziA:8SQSRVQbxI5mFWd1ncP9t8gAZnl7yumby7elcpleKe9dFLa3j-Edgf546UgQi7Dd7V35-0wo-IvtWc2h9RHWAg',
+    },
 ]
 
 export const featureFlags: IFeatureFlags = {
