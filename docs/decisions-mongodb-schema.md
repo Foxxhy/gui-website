@@ -40,4 +40,4 @@ Conserver des chaînes (`user-admin`, `article-1`) en POC ; migrer vers ObjectId
 
 ## Statut
 
-Décision validée — implémentation MongoDB reportée après stabilisation de la couche repository mock.
+Décision validée — repositories MongoDB implémentés dans `src/repositories/mongodb/`.
