@@ -31,6 +31,12 @@ export const mongoPageRepository: IPageRepository = {
         const documents = await db.collection<IPageDocument>(mongoCollections.pages).find().toArray()
         return documents.map(pageFromDocument)
     },
+    findById: async (id) => {
+        const db = await getMongoDatabase()
+        await ensurePageIndexes(db)
+        const document = await db.collection<IPageDocument>(mongoCollections.pages).findOne({ _id: id })
+        return document ? pageFromDocument(document) : undefined
+    },
     findBySlug: async (slug) => {
         const db = await getMongoDatabase()
         await ensurePageIndexes(db)

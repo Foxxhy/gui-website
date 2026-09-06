@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { createArticlesUrl } from '@/lib/articles-url'
 import type {
     IArticle,
     IArticlePagination,
@@ -74,14 +75,6 @@ export const ArticleList = ({ articles }: { articles: IArticle[] }) => (
         ))}
     </ul>
 )
-
-const createArticlesUrl = (search: string, tagSlugs: string[], page: number) => {
-    const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    for (const tagSlug of tagSlugs) params.append('tags', tagSlug)
-    params.set('page', String(page))
-    return `/articles?${params.toString()}`
-}
 
 export const ArticlePagination = ({
     pagination,

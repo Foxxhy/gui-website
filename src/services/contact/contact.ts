@@ -1,11 +1,20 @@
 import { getRepositories } from '@/repositories'
+import { parseContactFieldFromFormData } from '@/lib/contact-field-form'
 import { serviceAnalytics } from '@/services/analytics'
-import { serviceValidationLimits, serviceIsValidEmail, serviceToTrimmedString } from '@/services/validation'
-import type {
-    IActionResult,
-    IContactField,
-    IContactFormConfiguration,
-    IFieldErrors,
+import {
+    serviceFieldErrors,
+    serviceIsValidEmail,
+    serviceMaxLengthError,
+    serviceRequiredError,
+    serviceToTrimmedString,
+    serviceValidationLimits,
+} from '@/services/validation'
+import {
+    IContactFieldType,
+    type IActionResult,
+    type IContactField,
+    type IContactFormConfiguration,
+    type IFieldErrors,
 } from '@/types'
 
 const sortedFields = (fields: IContactField[]) =>
@@ -14,6 +23,49 @@ const sortedFields = (fields: IContactField[]) =>
 const isValidPhone = (value: string) =>
     /^[+]?[\d\s().-]{6,}$/.test(value)
 
+const isValidTechnicalName = (value: string) =>
+    /^[a-z][a-z0-9_]*$/i.test(value)
+
+const validateContactField = async (
+    values: Partial<IContactField>,
+    currentId?: string
+): Promise<IFieldErrors> => {
+    const configuration = await getRepositories().settings.getContactFormConfiguration()
+    const rawLabel = typeof values.label === 'string' ? values.label.trim() : ''
+    const technicalName = serviceToTrimmedString(values.technicalName, serviceValidationLimits.technicalName)
+    const label = serviceToTrimmedString(values.label, serviceValidationLimits.name)
+    const errors = serviceFieldErrors(
+        ['technicalName', serviceRequiredError(technicalName, 'L’identifiant technique est obligatoire.') ?? serviceMaxLengthError(technicalName, serviceValidationLimits.technicalName, 'L’identifiant technique est trop long.') ?? (!isValidTechnicalName(technicalName) ? 'L’identifiant technique est invalide.' : undefined)],
+        ['label', serviceRequiredError(label, 'Le libellé est obligatoire.') ?? serviceMaxLengthError(rawLabel, serviceValidationLimits.name, 'Le libellé est trop long.')],
+        ['type', values.type && !Object.values(IContactFieldType).includes(values.type) ? 'Le type est invalide.' : undefined],
+    )
+
+    if (values.type === IContactFieldType.SELECT && (!values.options || values.options.length === 0)) {
+        errors.options = 'Au moins une option est requise pour une liste.'
+    }
+
+    if (
+        technicalName &&
+        configuration.fields.some(
+            (field) => field.technicalName === technicalName && field.id !== currentId
+        )
+    ) {
+        errors.technicalName = 'Cet identifiant technique est déjà utilisé.'
+    }
+
+    return errors
+}
+
+const toFieldInput = (field: IContactField): Omit<IContactField, 'id' | 'order'> => ({
+    technicalName: field.technicalName,
+    label: field.label,
+    type: field.type,
+    required: field.required,
+    placeholder: field.placeholder,
+    helpText: field.helpText,
+    options: field.options,
+})
+
 export const serviceContact = {
     getConfiguration: async (): Promise<IContactFormConfiguration> => {
         const configuration = await getRepositories().settings.getContactFormConfiguration()
@@ -21,6 +73,10 @@ export const serviceContact = {
             ...configuration,
             fields: sortedFields(configuration.fields),
         }
+    },
+    getFieldById: async (id: string): Promise<IContactField | undefined> => {
+        const configuration = await getRepositories().settings.getContactFormConfiguration()
+        return configuration.fields.find((field) => field.id === id)
     },
     submit: async (formData: FormData): Promise<IActionResult> => {
         const configuration = await getRepositories().settings.getContactFormConfiguration()
@@ -85,5 +141,85 @@ export const serviceContact = {
                 fields: sortedFields(data.fields),
             },
         }
+    },
+    createField: async (formData: FormData): Promise<IActionResult<IContactFormConfiguration>> => {
+        const parsed = parseContactFieldFromFormData(formData)
+        const errors = await validateContactField(parsed)
+        if (Object.keys(errors).length > 0) {
+            return { success: false, message: 'Le champ contient des erreurs.', errors }
+        }
+
+        const data = await getRepositories().settings.createContactField(toFieldInput(parsed))
+        return {
+            success: true,
+            message: 'Champ ajouté.',
+            data: { ...data, fields: sortedFields(data.fields) },
+        }
+    },
+    updateField: async (formData: FormData): Promise<IActionResult<IContactFormConfiguration>> => {
+        const id = String(formData.get('id') ?? '')
+        const current = await serviceContact.getFieldById(id)
+        if (!current) return { success: false, message: 'Champ introuvable.' }
+
+        const parsed = parseContactFieldFromFormData(formData, current)
+        const errors = await validateContactField(parsed, id)
+        if (Object.keys(errors).length > 0) {
+            return { success: false, message: 'Le champ contient des erreurs.', errors }
+        }
+
+        const data = await getRepositories().settings.updateContactField(id, toFieldInput(parsed))
+        if (!data) return { success: false, message: 'Champ introuvable.' }
+        return {
+            success: true,
+            message: 'Champ modifié.',
+            data: { ...data, fields: sortedFields(data.fields) },
+        }
+    },
+    deleteField: async (id: string): Promise<IActionResult<IContactFormConfiguration>> => {
+        const deleted = await getRepositories().settings.deleteContactField(id)
+        if (!deleted) return { success: false, message: 'Champ introuvable.' }
+
+        const data = await getRepositories().settings.getContactFormConfiguration()
+        return {
+            success: true,
+            message: 'Champ supprimé.',
+            data: { ...data, fields: sortedFields(data.fields) },
+        }
+    },
+    reorderField: async (
+        id: string,
+        direction: 'up' | 'down'
+    ): Promise<IActionResult<IContactFormConfiguration>> => {
+        const data = await getRepositories().settings.reorderContactField(id, direction)
+        if (!data) return { success: false, message: 'Champ introuvable.' }
+        return {
+            success: true,
+            message: 'Ordre mis à jour.',
+            data: { ...data, fields: sortedFields(data.fields) },
+        }
+    },
+    mutateFromAdminForm: async (
+        formData: FormData,
+        operation: string
+    ): Promise<IActionResult<IContactFormConfiguration>> => {
+        if (operation === 'champ ajouté') {
+            return serviceContact.createField(formData)
+        }
+        if (operation === 'champ modifié') {
+            return serviceContact.updateField(formData)
+        }
+        if (operation === 'champ supprimé') {
+            return serviceContact.deleteField(String(formData.get('id') ?? ''))
+        }
+        if (operation === 'ordre modifié') {
+            const direction = String(formData.get('move') ?? '')
+            if (direction !== 'up' && direction !== 'down') {
+                return { success: false, message: 'Sens de déplacement invalide.' }
+            }
+            return serviceContact.reorderField(String(formData.get('id') ?? ''), direction)
+        }
+
+        const values = Object.fromEntries(formData.entries())
+        return serviceContact.updateConfiguration(values)
     },
 }

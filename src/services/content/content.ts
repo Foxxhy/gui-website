@@ -1,7 +1,7 @@
 import { getRepositories } from '@/repositories'
 import { serviceMapRepositoryErrorAs } from '@/services/repository-errors'
-import { validatePageSections } from '@/services/content/page-sections'
-import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceRequiredError } from '@/services/validation'
+import { parsePageSectionsFromFormData, validatePageSections } from '@/services/content/page-sections'
+import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceMaxLengthError, serviceNormalizeSlug, serviceReadFormString, serviceRequiredError } from '@/services/validation'
 import {
     IStatus,
     type IActionResult,
@@ -90,6 +90,8 @@ export const serviceContent = {
         getRepositories().articles.findById(id),
     getPageBySlug: async (slug: string): Promise<IPage | undefined> =>
         getRepositories().pages.findBySlug(slug),
+    getPageById: async (id: string): Promise<IPage | undefined> =>
+        getRepositories().pages.findById(id),
     getPages: async (): Promise<IPage[]> => getRepositories().pages.findAll(),
     createArticle: async (values: Partial<IArticle>, author: IUser): Promise<IActionResult<IArticle>> => {
         const validation = await validateArticle(values)
@@ -153,7 +155,7 @@ export const serviceContent = {
         }
     },
     updatePage: async (id: string, values: Partial<IPage>): Promise<IActionResult<IPage>> => {
-        const existing = await getRepositories().pages.findAll().then((pages) => pages.find((page) => page.id === id))
+        const existing = await getRepositories().pages.findById(id)
         if (!existing) return { success: false, message: 'Page introuvable.' }
 
         const sections = values.sections ?? existing.sections
@@ -180,5 +182,38 @@ export const serviceContent = {
         })
         if (!updated) return { success: false, message: 'Page introuvable.' }
         return { success: true, message: 'Page enregistrée.', data: updated }
+    },
+    mutateArticleFromFormData: async (
+        formData: FormData,
+        author: IUser
+    ): Promise<IActionResult<IArticle>> => {
+        const selectedTagIds = formData.getAll('tags').map(String)
+        const availableTags = await getRepositories().tags.findAll()
+        const tags = availableTags.filter((tag) => selectedTagIds.includes(tag.id))
+        const rawStatus = serviceReadFormString(formData, 'status', 32)
+        const status = rawStatus && Object.values(IStatus).includes(rawStatus as IStatus)
+            ? rawStatus as IStatus
+            : undefined
+        const values = {
+            title: serviceReadFormString(formData, 'title', serviceValidationLimits.title),
+            slug: serviceReadFormString(formData, 'slug', serviceValidationLimits.slug),
+            description: serviceReadFormString(formData, 'description', serviceValidationLimits.description),
+            content: serviceReadFormString(formData, 'content', serviceValidationLimits.content),
+            tags,
+            status,
+        }
+        const id = formData.get('id')
+        return id
+            ? await serviceContent.updateArticle(String(id), values, author)
+            : await serviceContent.createArticle(values, author)
+    },
+    mutatePageFromFormData: async (formData: FormData): Promise<IActionResult<IPage>> => {
+        const pageId = String(formData.get('id') ?? '')
+        const existing = await getRepositories().pages.findById(pageId)
+        if (!existing) return { success: false, message: 'Page introuvable.' }
+
+        const values = Object.fromEntries(formData.entries())
+        const sections = parsePageSectionsFromFormData(formData, existing.sections)
+        return await serviceContent.updatePage(pageId, { ...values, sections })
     },
 }

@@ -10,8 +10,7 @@ import {
     serviceTag,
     serviceUser,
 } from '@/services'
-import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
-import { IStatus, MUTATION_AREAS, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
+import { MUTATION_AREAS, type IActionResult } from '@/types'
 
 export const actionSubmitAdminMutation = async (
     _previousState: IActionResult | undefined,
@@ -25,44 +24,16 @@ export const actionSubmitAdminMutation = async (
         return { success: false, message: 'Vous n’êtes pas autorisé à effectuer cette opération.' }
     }
 
-    const values = Object.fromEntries(formData.entries())
     if (area === 'articles') {
-        const selectedTagIds = formData.getAll('tags').map(String)
-        const availableTags = await serviceTag.getTags()
-        const tags = availableTags.filter((tag) => selectedTagIds.includes(tag.id))
-        const rawStatus = typeof values.status === 'string' ? values.status : undefined
-        const status = rawStatus && Object.values(IStatus).includes(rawStatus as IStatus)
-            ? rawStatus as IStatus
-            : undefined
-        const articleValues = { ...values, tags, status }
-        const result = formData.get('id')
-            ? await serviceContent.updateArticle(String(formData.get('id')), articleValues, session.user)
-            : await serviceContent.createArticle(articleValues, session.user)
+        const result = await serviceContent.mutateArticleFromFormData(formData, session.user)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'tags') {
-        const rawStyle = String(formData.get('style') ?? '')
-        const style = TAG_STYLES.includes(rawStyle as ITagStyle) ? rawStyle as ITagStyle : 'green'
-        const tagValues = {
-            name: String(formData.get('name') ?? ''),
-            slug: String(formData.get('slug') ?? ''),
-            style,
-            description: String(formData.get('description') ?? ''),
-        }
-        const result = operation === 'supprimé'
-            ? await serviceTag.deleteTag(String(formData.get('id') ?? ''))
-            : formData.get('id')
-                ? await serviceTag.updateTag(String(formData.get('id')), tagValues)
-                : await serviceTag.createTag(tagValues)
+        const result = await serviceTag.mutateFromFormData(formData, operation)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'pages') {
-        const pageId = String(formData.get('id') ?? '')
-        const existing = (await serviceContent.getPages()).find((page) => page.id === pageId)
-        if (!existing) return { success: false, message: 'Page introuvable.' }
-
-        const sections = parsePageSectionsFromFormData(formData, existing.sections)
-        const result = await serviceContent.updatePage(pageId, { ...values, sections })
+        const result = await serviceContent.mutatePageFromFormData(formData)
         if (result.success) {
             revalidatePath('/')
             revalidatePath('/association')
@@ -71,13 +42,7 @@ export const actionSubmitAdminMutation = async (
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'users') {
-        if (operation === 'supprimé') {
-            const result = await serviceUser.deleteUser(String(formData.get('id') ?? ''))
-            return { success: result.success, message: result.message, errors: result.errors }
-        }
-        const result = formData.get('id')
-            ? await serviceUser.updateUser(String(formData.get('id')), values)
-            : await serviceUser.createUser(values)
+        const result = await serviceUser.mutateFromFormData(formData, operation)
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'features') {
@@ -91,6 +56,6 @@ export const actionSubmitAdminMutation = async (
         }
         return { success: result.success, message: result.message, errors: result.errors }
     }
-    const result = await serviceContact.updateConfiguration(values)
+    const result = await serviceContact.mutateFromAdminForm(formData, operation)
     return { success: result.success, message: result.message, errors: result.errors }
 }
