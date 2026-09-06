@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { actionLogin, actionSubmitAdminMutation, actionSubmitContact } from '@/actions'
+import { actionAdminChangeUserPassword, actionChangeOwnPassword, actionLogin, actionSubmitAdminMutation, actionSubmitContact } from '@/actions'
 import type { IActionResult, IContactFormConfiguration } from '@/types'
 import { AdminPreview, type IAdminPreview } from './preview'
 import { ContactField } from './public'
@@ -33,6 +33,32 @@ export const LoginForm = ({ returnTo }: { returnTo: string }) => {
             <p><label htmlFor="password">Mot de passe</label><br /><input id="password" name="password" type="password" required autoComplete="current-password" /></p>
             <button type="submit" disabled={pending}>{pending ? 'Connexion…' : 'Se connecter'}</button>
             {state.message && <p aria-live="polite" role="alert">{state.message}</p>}
+        </form>
+    )
+}
+
+export const ChangeOwnPasswordForm = () => {
+    const [state, action, pending] = useActionState(actionChangeOwnPassword, initialState)
+    return (
+        <form action={action}>
+            <p><label htmlFor="currentPassword">Mot de passe actuel</label><br /><input id="currentPassword" name="currentPassword" type="password" required autoComplete="current-password" />{state.errors?.currentPassword && <span role="alert"> {state.errors.currentPassword}</span>}</p>
+            <p><label htmlFor="newPassword">Nouveau mot de passe</label><br /><input id="newPassword" name="newPassword" type="password" required autoComplete="new-password" />{state.errors?.newPassword && <span role="alert"> {state.errors.newPassword}</span>}</p>
+            <p><label htmlFor="confirmPassword">Confirmation du nouveau mot de passe</label><br /><input id="confirmPassword" name="confirmPassword" type="password" required autoComplete="new-password" />{state.errors?.confirmPassword && <span role="alert"> {state.errors.confirmPassword}</span>}</p>
+            <button type="submit" disabled={pending}>{pending ? 'Modification…' : 'Modifier mon mot de passe'}</button>
+            {state.message && <p aria-live="polite" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
+        </form>
+    )
+}
+
+export const AdminChangeUserPasswordForm = ({ userId }: { userId: string }) => {
+    const [state, action, pending] = useActionState(actionAdminChangeUserPassword, initialState)
+    return (
+        <form action={action}>
+            <input type="hidden" name="userId" value={userId} />
+            <p><label htmlFor={`newPassword-${userId}`}>Nouveau mot de passe</label><br /><input id={`newPassword-${userId}`} name="newPassword" type="password" required autoComplete="new-password" />{state.errors?.newPassword && <span role="alert"> {state.errors.newPassword}</span>}</p>
+            <p><label htmlFor={`confirmPassword-${userId}`}>Confirmation du nouveau mot de passe</label><br /><input id={`confirmPassword-${userId}`} name="confirmPassword" type="password" required autoComplete="new-password" />{state.errors?.confirmPassword && <span role="alert"> {state.errors.confirmPassword}</span>}</p>
+            <button type="submit" disabled={pending}>{pending ? 'Modification…' : 'Modifier le mot de passe'}</button>
+            {state.message && <p aria-live="polite" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
         </form>
     )
 }

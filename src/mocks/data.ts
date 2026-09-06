@@ -14,7 +14,7 @@ import {
 export interface IMockAccount {
     user: IUser
     login: string
-    password: string
+    passwordHash: string
 }
 
 export const users: IUser[] = [
@@ -47,9 +47,18 @@ export const users: IUser[] = [
     },
 ]
 
+// Hash pré-calculés (scrypt) pour les comptes démo ; aucun mot de passe en clair dans le dépôt.
 export const accounts: IMockAccount[] = [
-    { user: users[0], login: 'admin', password: 'admin' },
-    { user: users[1], login: 'editor', password: 'editor' },
+    {
+        user: users[0],
+        login: 'admin',
+        passwordHash: 'scrypt:VTJDNipPx0IAeWuC110ubQ:nKZSn5WNQJF_avB9nG0khMgz3R3sexjwXJbtHaiJo6DUwi-R58IkPhoyLnv6nBeuB_cKw0_DuFPChJE1fHMLMg',
+    },
+    {
+        user: users[1],
+        login: 'editor',
+        passwordHash: 'scrypt:IJylgnI7fwg9KWB6UnkJOQ:M-kbOmvy1dBDV19byHIDiWhDzRH-iteLyLhHoKfetAgJpdeTMPlDAI9gTCWvpwVMHf4OismXJARs-35SWvDPew',
+    },
 ]
 
 export const featureFlags: IFeatureFlags = {

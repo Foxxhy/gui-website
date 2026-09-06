@@ -4,7 +4,7 @@ import { serviceAuth } from './auth'
 
 describe('serviceAuth', () => {
     it('authenticates a valid mock account', async () => {
-        await expect(serviceAuth.authenticate({ login: 'admin', password: 'admin' })).resolves.toBe(accounts[0].user)
+        await expect(serviceAuth.authenticate({ login: 'admin', password: 'admin' })).resolves.toMatchObject({ id: accounts[0].user.id })
     })
 
     it('rejects invalid credentials', async () => {
