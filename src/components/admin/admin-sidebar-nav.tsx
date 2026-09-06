@@ -18,7 +18,6 @@ import {
     SidebarRail,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import type { IRole } from '@/types'
 import type { IAdminNavigation } from './navigation'
 
 const isActivePath = (pathname: string, href: string) =>
@@ -27,22 +26,26 @@ const isActivePath = (pathname: string, href: string) =>
 export const AdminSidebarNav = ({
     navigation,
     siteTitle,
-    userName,
-    userRole,
 }: {
     navigation: IAdminNavigation
     siteTitle: string
-    userName: string
-    userRole: IRole
 }) => {
     const pathname = usePathname()
 
     return (
         <Sidebar collapsible="offcanvas">
             <SidebarHeader className="border-b border-sidebar-border">
-                <div className="px-2 py-1">
-                    <p className="font-heading text-sm font-semibold">{siteTitle}</p>
-                    <p className="text-xs text-muted-foreground">Administration</p>
+                <div className="flex flex-col gap-3 px-2 py-2">
+                    <div
+                        aria-hidden="true"
+                        className="flex size-10 items-center justify-center rounded-lg border border-pink-300 bg-pink-200 text-[10px] font-medium tracking-wide text-pink-900 uppercase"
+                    >
+                        Logo
+                    </div>
+                    <div>
+                        <p className="font-heading text-sm font-semibold">{siteTitle}</p>
+                        <p className="text-xs text-muted-foreground">Administration</p>
+                    </div>
                 </div>
             </SidebarHeader>
             <SidebarContent>
@@ -55,14 +58,6 @@ export const AdminSidebarNav = ({
                                     render={<Link href={navigation.dashboard.href} />}
                                 >
                                     {navigation.dashboard.label}
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton
-                                    isActive={isActivePath(pathname, navigation.account.href)}
-                                    render={<Link href={navigation.account.href} />}
-                                >
-                                    {navigation.account.label}
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
@@ -89,11 +84,12 @@ export const AdminSidebarNav = ({
                     </SidebarGroup>
                 )}
 
-                {navigation.standaloneLinks.length > 0 && (
+                {navigation.associationGroup.items.length > 0 && (
                     <SidebarGroup>
+                        <SidebarGroupLabel>{navigation.associationGroup.label}</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {navigation.standaloneLinks.map((link) => (
+                                {navigation.associationGroup.items.map((link) => (
                                     <SidebarMenuItem key={link.href}>
                                         <SidebarMenuButton
                                             isActive={isActivePath(pathname, link.href)}
@@ -109,16 +105,20 @@ export const AdminSidebarNav = ({
                 )}
             </SidebarContent>
             <SidebarFooter className="border-t border-sidebar-border">
-                <div className="flex flex-col gap-3 p-2">
+                <div className="flex flex-col gap-2 p-2">
                     <Link
-                        className={cn(buttonVariants({ variant: 'default' }), 'w-full justify-center')}
-                        href="/"
+                        className={cn(
+                            buttonVariants({
+                                variant: isActivePath(pathname, navigation.account.href)
+                                    ? 'secondary'
+                                    : 'outline',
+                            }),
+                            'w-full justify-center'
+                        )}
+                        href={navigation.account.href}
                     >
-                        Retour au site
+                        {navigation.account.label}
                     </Link>
-                    <p className="text-xs text-muted-foreground">
-                        {userName} ({userRole})
-                    </p>
                     <form action={actionLogout}>
                         <Button className="w-full" type="submit" variant="outline">
                             Se déconnecter

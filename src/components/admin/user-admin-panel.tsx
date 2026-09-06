@@ -123,7 +123,9 @@ export const UserAdminPanel = ({
                 <CardHeader className="flex flex-row items-center justify-between gap-4">
                     <div>
                         <CardTitle>Utilisateurs</CardTitle>
-                        <CardDescription>Gérez les comptes et les rôles depuis ce panel.</CardDescription>
+                        <CardDescription>
+                            Gérez les comptes et les rôles depuis ce panel.
+                        </CardDescription>
                     </div>
                     <Button onClick={openCreate} type="button">
                         Créer un utilisateur
@@ -148,14 +150,24 @@ export const UserAdminPanel = ({
                                         <Badge variant="secondary">{roleLabels[user.role]}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button
-                                            onClick={() => openEdit(user.id)}
-                                            size="sm"
-                                            type="button"
-                                            variant="outline"
-                                        >
-                                            Modifier
-                                        </Button>
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
+                                            <Button
+                                                onClick={() => openEdit(user.id)}
+                                                size="sm"
+                                                type="button"
+                                                variant="outline"
+                                            >
+                                                Modifier
+                                            </Button>
+                                            <AdminMutationForm
+                                                area="users"
+                                                operation="supprimé"
+                                                submitClassName="h-7 px-2.5 text-[0.8rem]"
+                                                submitLabel="Supprimer"
+                                            >
+                                                <input name="id" type="hidden" value={user.id} />
+                                            </AdminMutationForm>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -168,7 +180,9 @@ export const UserAdminPanel = ({
                 <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
                     <SheetHeader>
                         <SheetTitle>
-                            {mode === 'create' ? 'Créer un utilisateur' : `Modifier : ${selectedUser?.name ?? ''}`}
+                            {mode === 'create'
+                                ? 'Créer un utilisateur'
+                                : `Modifier : ${selectedUser?.name ?? ''}`}
                         </SheetTitle>
                         <SheetDescription>
                             {mode === 'create'
@@ -180,29 +194,40 @@ export const UserAdminPanel = ({
                     <div className="space-y-6 px-4 pb-4">
                         <AdminMutationForm
                             area="users"
+                            deferActions
+                            footer={
+                                <Button
+                                    className="w-full"
+                                    onClick={closePanel}
+                                    type="button"
+                                    variant="outline"
+                                >
+                                    Annuler
+                                </Button>
+                            }
+                            formId="user-mutation-form"
+                            middleSlot={
+                                mode === 'edit' && selectedUser ? (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Mot de passe</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <AdminChangeUserPasswordForm
+                                                userId={selectedUser.id}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                ) : null
+                            }
                             operation={mode === 'create' ? 'créé' : 'modifié'}
+                            submitClassName="w-full"
+                            submitLabel="Sauvegarder"
                         >
                             <div className="space-y-4">
                                 <UserFormFields user={mode === 'edit' ? selectedUser : undefined} />
                             </div>
                         </AdminMutationForm>
-
-                        {mode === 'edit' && selectedUser && (
-                            <>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Mot de passe</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <AdminChangeUserPasswordForm userId={selectedUser.id} />
-                                    </CardContent>
-                                </Card>
-
-                                <AdminMutationForm area="users" operation="supprimé">
-                                    <input name="id" type="hidden" value={selectedUser.id} />
-                                </AdminMutationForm>
-                            </>
-                        )}
                     </div>
                 </SheetContent>
             </Sheet>

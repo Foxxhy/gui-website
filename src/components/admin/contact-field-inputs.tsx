@@ -21,6 +21,7 @@ export const ContactFieldInputs = ({ field }: { field?: IContactField }) => (
             <Select defaultValue={field?.type ?? 'text'} id="type" name="type">
                 <option value="text">Texte</option>
                 <option value="email">E-mail</option>
+                <option value="tel">Téléphone</option>
                 <option value="textarea">Zone de texte</option>
                 <option value="select">Liste</option>
             </Select>

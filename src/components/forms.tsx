@@ -1,8 +1,11 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { CircleAlertIcon, CircleCheckIcon } from 'lucide-react'
 import { actionAdminChangeUserPassword, actionChangeOwnPassword, actionLogin, actionSubmitAdminMutation, actionSubmitContact } from '@/actions'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { IActionResult, IContactFormConfiguration } from '@/types'
@@ -13,16 +16,47 @@ const initialState: IActionResult = { success: false, message: '' }
 
 export const ContactForm = ({ configuration }: { configuration: IContactFormConfiguration }) => {
     const [state, action, pending] = useActionState(actionSubmitContact, initialState)
+
     return (
-        <form action={action}>
+        <form action={action} className="space-y-4">
             {configuration.fields.map((field) => (
-                <div key={field.id}>
-                    <ContactField field={field} />
-                    {state.errors?.[field.technicalName] && <span role="alert"> {state.errors[field.technicalName]}</span>}
-                </div>
+                <ContactField
+                    error={state.errors?.[field.technicalName]}
+                    field={field}
+                    key={field.id}
+                />
             ))}
-            <button type="submit" disabled={pending}>{pending ? 'Envoi en cours…' : 'Envoyer'}</button>
-            {state.message && <p aria-live="polite" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
+            <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                    <Checkbox
+                        aria-invalid={state.errors?.consent ? true : undefined}
+                        id="consent"
+                        name="consent"
+                        required
+                        value="on"
+                    />
+                    <Label className="font-normal leading-snug" htmlFor="consent">
+                        J’accepte que mon témoignage soit traité et modéré par l’association.
+                    </Label>
+                </div>
+                {state.errors?.consent && (
+                    <p className="text-sm text-destructive" role="alert">
+                        {state.errors.consent}
+                    </p>
+                )}
+            </div>
+            <div className="flex justify-end">
+                <Button disabled={pending} type="submit">
+                    {pending ? 'Envoi en cours…' : 'Envoyer'}
+                </Button>
+            </div>
+            {state.message && (
+                <Alert variant={state.success ? 'default' : 'destructive'}>
+                    {state.success ? <CircleCheckIcon /> : <CircleAlertIcon />}
+                    <AlertTitle>{state.success ? 'Message envoyé' : 'Envoi impossible'}</AlertTitle>
+                    <AlertDescription>{state.message}</AlertDescription>
+                </Alert>
+            )}
         </form>
     )
 }
@@ -99,16 +133,88 @@ export const AdminMutationForm = ({
     operation,
     children,
     preview,
+    submitLabel,
+    submitClassName,
+    footer,
+    formId,
+    deferActions = false,
+    middleSlot,
 }: {
     area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
     operation: string
     children: React.ReactNode
     preview?: IAdminPreview
+    submitLabel?: string
+    submitClassName?: string
+    footer?: React.ReactNode
+    formId?: string
+    deferActions?: boolean
+    middleSlot?: React.ReactNode
 }) => {
     const [state, action, pending] = useActionState(actionSubmitAdminMutation, initialState)
     const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [previewValues, setPreviewValues] = useState(() => new FormData())
     const updatePreview = (form: HTMLFormElement) => setPreviewValues(new FormData(form))
 
-    return <div className="admin-editor">{isPreviewOpen && preview && <AdminPreview preview={preview} values={previewValues} onClose={() => setIsPreviewOpen(false)} />}<form action={action} className="space-y-4" onInput={(event) => updatePreview(event.currentTarget)} onChange={(event) => updatePreview(event.currentTarget)}><input type="hidden" name="area" value={area} /><input type="hidden" name="operation" value={operation} />{children}<div className="flex flex-wrap gap-2">{preview && <Button onClick={(event) => { const form = event.currentTarget.form; if (form) updatePreview(form); setIsPreviewOpen(true) }} type="button" variant="outline">Afficher l’aperçu</Button>}<Button disabled={pending} type="submit">{pending ? 'Traitement…' : operation}</Button></div>{state.message && <p aria-live="polite" className="text-sm" role={state.success ? 'status' : 'alert'}>{state.message}</p>}</form></div>
+    const actions = (
+        <div className={footer ? 'flex flex-col gap-2' : 'flex flex-wrap gap-2'}>
+            {preview && (
+                <Button
+                    onClick={(event) => {
+                        const form = event.currentTarget.form
+                        if (form) updatePreview(form)
+                        setIsPreviewOpen(true)
+                    }}
+                    type="button"
+                    variant="outline"
+                >
+                    Afficher l’aperçu
+                </Button>
+            )}
+            <Button
+                className={submitClassName}
+                disabled={pending}
+                form={deferActions ? formId : undefined}
+                type="submit"
+            >
+                {pending ? 'Traitement…' : (submitLabel ?? operation)}
+            </Button>
+            {footer}
+        </div>
+    )
+
+    return (
+        <div className="admin-editor space-y-4">
+            {isPreviewOpen && preview && (
+                <AdminPreview
+                    onClose={() => setIsPreviewOpen(false)}
+                    preview={preview}
+                    values={previewValues}
+                />
+            )}
+            <form
+                action={action}
+                className="space-y-4"
+                id={formId}
+                onChange={(event) => updatePreview(event.currentTarget)}
+                onInput={(event) => updatePreview(event.currentTarget)}
+            >
+                <input name="area" type="hidden" value={area} />
+                <input name="operation" type="hidden" value={operation} />
+                {children}
+                {!deferActions && actions}
+                {state.message && (
+                    <p
+                        aria-live="polite"
+                        className="text-sm"
+                        role={state.success ? 'status' : 'alert'}
+                    >
+                        {state.message}
+                    </p>
+                )}
+            </form>
+            {deferActions && middleSlot}
+            {deferActions && actions}
+        </div>
+    )
 }

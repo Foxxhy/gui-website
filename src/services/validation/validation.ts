@@ -5,6 +5,7 @@ import type { IFieldErrors } from '@/types'
 export const serviceValidationLimits = {
     name: 120,
     email: 254,
+    phone: 30,
     pseudonym: 80,
     slug: 80,
     description: 500,

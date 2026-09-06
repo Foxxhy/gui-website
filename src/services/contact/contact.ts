@@ -11,6 +11,9 @@ import type {
 const sortedFields = (fields: IContactField[]) =>
     [...fields].sort((first, second) => first.order - second.order)
 
+const isValidPhone = (value: string) =>
+    /^[+]?[\d\s().-]{6,}$/.test(value)
+
 export const serviceContact = {
     getConfiguration: async (): Promise<IContactFormConfiguration> => {
         const configuration = await getRepositories().settings.getContactFormConfiguration()
@@ -24,7 +27,12 @@ export const serviceContact = {
         const errors: IFieldErrors = {}
 
         for (const field of configuration.fields) {
-            const limit = field.type === 'textarea' ? serviceValidationLimits.message : serviceValidationLimits.name
+            const limit =
+                field.type === 'textarea'
+                    ? serviceValidationLimits.message
+                    : field.type === 'tel'
+                      ? serviceValidationLimits.phone
+                      : serviceValidationLimits.name
             const rawValue = formData.get(field.technicalName)
             const value = serviceToTrimmedString(rawValue, limit)
             if (typeof rawValue !== 'string') {
@@ -37,6 +45,9 @@ export const serviceContact = {
             if (field.type === 'email' && value && !serviceIsValidEmail(value)) {
                 errors[field.technicalName] = 'Veuillez saisir une adresse e-mail valide.'
             }
+            if (field.type === 'tel' && value && !isValidPhone(value)) {
+                errors[field.technicalName] = 'Veuillez saisir un numéro de téléphone valide.'
+            }
             if (rawValue.length > limit) errors[field.technicalName] = 'Ce champ est trop long.'
             if (
                 field.type === 'select' &&
@@ -45,6 +56,11 @@ export const serviceContact = {
             ) {
                 errors[field.technicalName] = 'Veuillez choisir une option valide.'
             }
+        }
+
+        const consent = formData.get('consent')
+        if (consent !== 'on' && consent !== 'true') {
+            errors.consent = 'Vous devez accepter le traitement de votre témoignage.'
         }
 
         if (Object.keys(errors).length > 0) {

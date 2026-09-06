@@ -5,6 +5,7 @@ import {
     type IAnalyticsEvent,
     type IAnalyticsPeriodRange,
     type IAnalyticsStats,
+    type IAnalyticsTimelinePoint,
 } from '@/types'
 
 const periodLabels: Record<AnalyticsPeriod, string> = {
@@ -12,6 +13,8 @@ const periodLabels: Record<AnalyticsPeriod, string> = {
     '7days': '7 derniers jours',
     '30days': '30 derniers jours',
 }
+
+const dayLabels = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.']
 
 export const analyticsGetPeriodRange = (period: AnalyticsPeriod, now = new Date()): IAnalyticsPeriodRange => {
     const end = new Date(now)
@@ -34,6 +37,57 @@ export const analyticsFormatAnalyticsName = (name: string): AnalyticsEventType =
         throw new Error(`Type d’événement analytics inconnu : ${name}`)
     }
     return formatted
+}
+
+const countEventsInRange = (events: IAnalyticsEvent[], start: Date, end: Date) =>
+    events.filter(({ timestamp }) => timestamp >= start && timestamp < end).length
+
+export const analyticsComputeTimeline = (
+    events: IAnalyticsEvent[],
+    period: AnalyticsPeriod,
+    now = new Date()
+): IAnalyticsTimelinePoint[] => {
+    if (period === 'today') {
+        const dayStart = new Date(now)
+        dayStart.setHours(0, 0, 0, 0)
+
+        return Array.from({ length: 6 }, (_, index) => {
+            const start = new Date(dayStart)
+            start.setHours(index * 4)
+            const end = new Date(dayStart)
+            end.setHours((index + 1) * 4)
+            return {
+                label: `${String(index * 4).padStart(2, '0')}h`,
+                count: countEventsInRange(events, start, end),
+            }
+        })
+    }
+
+    if (period === '7days') {
+        return Array.from({ length: 7 }, (_, index) => {
+            const start = new Date(now)
+            start.setDate(start.getDate() - (6 - index))
+            start.setHours(0, 0, 0, 0)
+            const end = new Date(start)
+            end.setDate(end.getDate() + 1)
+            return {
+                label: dayLabels[start.getDay()],
+                count: countEventsInRange(events, start, end),
+            }
+        })
+    }
+
+    return Array.from({ length: 6 }, (_, index) => {
+        const end = new Date(now)
+        end.setHours(0, 0, 0, 0)
+        end.setDate(end.getDate() - (5 - index) * 7 + 1)
+        const start = new Date(end)
+        start.setDate(start.getDate() - 7)
+        return {
+            label: `S${index + 1}`,
+            count: countEventsInRange(events, start, end),
+        }
+    })
 }
 
 export const analyticsComputeStats = (
@@ -64,5 +118,6 @@ export const analyticsComputeStats = (
         articles: countBy(({ articleId }) => articleId ?? '')
             .filter(([articleId]) => articleId)
             .map(([articleId, count]) => ({ articleId, count })),
+        timeline: analyticsComputeTimeline(filteredEvents, period, now),
     }
 }

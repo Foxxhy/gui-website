@@ -1,18 +1,12 @@
-import Link from 'next/link'
 import { AdminPageHeader } from '@/components/admin'
-import { Button } from '@/components/ui/button'
+import { AnalyticsHistoryCard } from '@/components/admin/analytics-history-card'
+import { AnalyticsPeriodTabs } from '@/components/admin/analytics-period-tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { serviceContent, serviceAnalytics, serviceAuth, serviceGetCurrentSession } from '@/services'
 import { redirect } from 'next/navigation'
 import type { AnalyticsPeriod } from '@/types'
 
 const periods: AnalyticsPeriod[] = ['today', '7days', '30days']
-
-const periodLabels: Record<AnalyticsPeriod, string> = {
-    today: 'Aujourd’hui',
-    '7days': '7 derniers jours',
-    '30days': '30 derniers jours',
-}
 
 const parsePeriod = (value: string | string[] | undefined): AnalyticsPeriod =>
     typeof value === 'string' && periods.includes(value as AnalyticsPeriod)
@@ -40,24 +34,13 @@ export default async function AdministrationAnalyticsPage({
                 description="Données anonymes issues de la simulation. Aucun visiteur n’est identifié."
                 title="Analytics"
             />
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>Période d’analyse</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                    {periods.map((candidate) => (
-                        <Button
-                            aria-current={candidate === period ? 'page' : undefined}
-                            key={candidate}
-                            nativeButton={false}
-                            render={<Link href={`/administration/analytics?period=${candidate}`} />}
-                            variant={candidate === period ? 'default' : 'outline'}
-                        >
-                            {periodLabels[candidate]}
-                        </Button>
-                    ))}
-                </CardContent>
-            </Card>
+            <div className="mb-6">
+                <AnalyticsPeriodTabs period={period} />
+            </div>
+
+            <div className="mb-6">
+                <AnalyticsHistoryCard stats={stats} />
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <Card>
@@ -66,10 +49,28 @@ export default async function AdministrationAnalyticsPage({
                     </CardHeader>
                     <CardContent>
                         <dl className="grid gap-3 sm:grid-cols-2">
-                            <div><dt className="text-sm text-muted-foreground">Consultations</dt><dd className="text-2xl font-semibold">{stats.total}</dd></div>
-                            <div><dt className="text-sm text-muted-foreground">Consultations de pages</dt><dd className="text-2xl font-semibold">{stats.pageViews}</dd></div>
-                            <div><dt className="text-sm text-muted-foreground">Consultations d’articles</dt><dd className="text-2xl font-semibold">{stats.articleViews}</dd></div>
-                            <div><dt className="text-sm text-muted-foreground">Envois du formulaire</dt><dd className="text-2xl font-semibold">{stats.contactSubmissions}</dd></div>
+                            <div>
+                                <dt className="text-sm text-muted-foreground">Consultations</dt>
+                                <dd className="text-2xl font-semibold">{stats.total}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-sm text-muted-foreground">
+                                    Consultations de pages
+                                </dt>
+                                <dd className="text-2xl font-semibold">{stats.pageViews}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-sm text-muted-foreground">
+                                    Consultations d’articles
+                                </dt>
+                                <dd className="text-2xl font-semibold">{stats.articleViews}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-sm text-muted-foreground">
+                                    Envois du formulaire
+                                </dt>
+                                <dd className="text-2xl font-semibold">{stats.contactSubmissions}</dd>
+                            </div>
                         </dl>
                     </CardContent>
                 </Card>
@@ -80,12 +81,15 @@ export default async function AdministrationAnalyticsPage({
                     </CardHeader>
                     <CardContent>
                         {stats.pages.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Aucune consultation sur cette période.</p>
+                            <p className="text-sm text-muted-foreground">
+                                Aucune consultation sur cette période.
+                            </p>
                         ) : (
                             <ol className="space-y-2">
                                 {stats.pages.map((page) => (
                                     <li key={page.path}>
-                                        {page.path} — {page.count} consultation{page.count > 1 ? 's' : ''}
+                                        {page.path} — {page.count} consultation
+                                        {page.count > 1 ? 's' : ''}
                                     </li>
                                 ))}
                             </ol>
@@ -99,12 +103,15 @@ export default async function AdministrationAnalyticsPage({
                     </CardHeader>
                     <CardContent>
                         {stats.articles.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Aucun article consulté sur cette période.</p>
+                            <p className="text-sm text-muted-foreground">
+                                Aucun article consulté sur cette période.
+                            </p>
                         ) : (
                             <ol className="space-y-2">
                                 {stats.articles.map((article) => (
                                     <li key={article.articleId}>
-                                        {articleTitles.get(article.articleId) ?? article.articleId} — {article.count} vue{article.count > 1 ? 's' : ''}
+                                        {articleTitles.get(article.articleId) ?? article.articleId}{' '}
+                                        — {article.count} vue{article.count > 1 ? 's' : ''}
                                     </li>
                                 ))}
                             </ol>

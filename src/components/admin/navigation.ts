@@ -36,14 +36,24 @@ export const adminContentGroup: IAdminNavGroup = {
     ],
 }
 
-export const adminStandaloneLinks: IAdminNavLink[] = [
-    { href: '/administration/utilisateurs', label: 'Gestion des utilisateurs', area: 'users' },
-    { href: '/administration/formulaire-contact', label: 'Formulaire de contact', area: 'contactForm' },
-    { href: '/administration/analytics', label: 'Analytics', area: 'analytics' },
-]
+export const adminAssociationGroup: IAdminNavGroup = {
+    label: 'Gestion de l’association',
+    items: [
+        { href: '/administration/utilisateurs', label: 'Gestion des utilisateurs', area: 'users' },
+        {
+            href: '/administration/formulaire-contact',
+            label: 'Formulaire de contact',
+            area: 'contactForm',
+        },
+        { href: '/administration/analytics', label: 'Analytics', area: 'analytics' },
+    ],
+}
 
-const canAccessLink = (role: IRole, link: IAdminNavLink, canManage: (role: IRole, area: IServiceAdminArea) => boolean) =>
-    !link.area || canManage(role, link.area)
+const canAccessLink = (
+    role: IRole,
+    link: IAdminNavLink,
+    canManage: (role: IRole, area: IServiceAdminArea) => boolean
+) => !link.area || canManage(role, link.area)
 
 export const buildAdminNavigation = (
     role: IRole,
@@ -55,7 +65,10 @@ export const buildAdminNavigation = (
         ...adminContentGroup,
         items: adminContentGroup.items.filter((link) => canAccessLink(role, link, canManage)),
     },
-    standaloneLinks: adminStandaloneLinks.filter((link) => canAccessLink(role, link, canManage)),
+    associationGroup: {
+        ...adminAssociationGroup,
+        items: adminAssociationGroup.items.filter((link) => canAccessLink(role, link, canManage)),
+    },
 })
 
 export type IAdminNavigation = ReturnType<typeof buildAdminNavigation>

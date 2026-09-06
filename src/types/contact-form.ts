@@ -1,6 +1,7 @@
 export enum IContactFieldType {
     TEXT = 'text',
     EMAIL = 'email',
+    TEL = 'tel',
     TEXTAREA = 'textarea',
     SELECT = 'select',
 }

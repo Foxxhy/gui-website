@@ -28,6 +28,11 @@ export interface IAnalyticsArticleStat {
     count: number
 }
 
+export interface IAnalyticsTimelinePoint {
+    label: string
+    count: number
+}
+
 export interface IAnalyticsStats {
     period: IAnalyticsPeriodRange
     total: number
@@ -36,4 +41,5 @@ export interface IAnalyticsStats {
     contactSubmissions: number
     pages: IAnalyticsPageStat[]
     articles: IAnalyticsArticleStat[]
+    timeline: IAnalyticsTimelinePoint[]
 }

@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { XIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { getTagBadgeVariant } from '@/components/public/tag-badge'
 import type { ITag } from '@/types'
 
@@ -18,21 +21,103 @@ const createArticlesUrl = (search: string, tagSlugs: string[]) => {
     return `/articles?${params.toString()}`
 }
 
-export const ArticleFilters = ({
-    search: initialSearch,
-    selectedTagSlugs,
-    tags,
-}: {
+type ArticleFiltersProps = {
     search: string
     selectedTagSlugs: string[]
     tags: ITag[]
-}) => {
+}
+
+export const ArticleSearchFilters = ({
+    search: initialSearch,
+    selectedTagSlugs,
+    tags,
+}: ArticleFiltersProps) => {
     const router = useRouter()
     const [search, setSearch] = useState(initialSearch)
+    const selectedTags = tags.filter((tag) => selectedTagSlugs.includes(tag.slug))
+    const hasActiveFilters = search.trim().length > 0 || selectedTagSlugs.length > 0
 
     useEffect(() => {
         setSearch(initialSearch)
     }, [initialSearch])
+
+    const submitSearch = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        router.push(createArticlesUrl(search, selectedTagSlugs))
+    }
+
+    const removeTag = (tagSlug: string) => {
+        router.push(
+            createArticlesUrl(
+                search,
+                selectedTagSlugs.filter((selectedTagSlug) => selectedTagSlug !== tagSlug)
+            )
+        )
+    }
+
+    return (
+        <section aria-labelledby="article-filters-title" className="space-y-2">
+            <h2 className="font-heading text-lg font-semibold" id="article-filters-title">
+                Rechercher et filtrer les articles
+            </h2>
+            <form
+                className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                onSubmit={submitSearch}
+            >
+                <Label className="sr-only" htmlFor="article-search">
+                    Rechercher un article
+                </Label>
+                <Input
+                    className="min-w-0 flex-1"
+                    id="article-search"
+                    name="search"
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Rechercher un article"
+                    type="search"
+                    value={search}
+                />
+                <Button className="shrink-0" type="submit">
+                    Rechercher
+                </Button>
+            </form>
+            {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {selectedTags.map((tag) => (
+                        <Badge
+                            className="gap-1 pr-1"
+                            key={tag.id}
+                            variant={getTagBadgeVariant(tag.style)}
+                        >
+                            {tag.name}
+                            <button
+                                aria-label={`Retirer le filtre ${tag.name}`}
+                                className="rounded-full p-0.5 hover:bg-black/10"
+                                onClick={() => removeTag(tag.slug)}
+                                type="button"
+                            >
+                                <XIcon className="size-3" />
+                            </button>
+                        </Badge>
+                    ))}
+                    <Button
+                        onClick={() => router.push('/articles')}
+                        type="button"
+                        variant="outline"
+                    >
+                        Réinitialiser les critères
+                    </Button>
+                </div>
+            )}
+        </section>
+    )
+}
+
+export const ArticleTagFilters = ({
+    search,
+    selectedTagSlugs,
+    tags,
+}: ArticleFiltersProps) => {
+    const router = useRouter()
 
     const updateTags = (tagSlug: string) => {
         const tagSlugs = selectedTagSlugs.includes(tagSlug)
@@ -42,27 +127,12 @@ export const ArticleFilters = ({
         router.push(createArticlesUrl(search, tagSlugs))
     }
 
-    const submitSearch = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        router.push(createArticlesUrl(search, selectedTagSlugs))
-    }
-
     return (
-        <section aria-labelledby="article-filters-title">
-            <h2 id="article-filters-title">Rechercher et filtrer les articles</h2>
-            <form onSubmit={submitSearch}>
-                <label htmlFor="article-search">Rechercher un article</label>
-                <input
-                    id="article-search"
-                    name="search"
-                    onChange={(event) => setSearch(event.target.value)}
-                    type="search"
-                    value={search}
-                />
-                <button type="submit">Rechercher</button>
-            </form>
-            <section aria-labelledby="tag-filter-title">
-                <h3 id="tag-filter-title">Filtrer par tags</h3>
+        <section aria-labelledby="tag-filter-title" className="space-y-2">
+            <h3 className="font-heading text-base font-semibold" id="tag-filter-title">
+                Filtrer par tags
+            </h3>
+            <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => {
                     const selected = selectedTagSlugs.includes(tag.slug)
                     return (
@@ -79,34 +149,7 @@ export const ArticleFilters = ({
                         </button>
                     )
                 })}
-            </section>
-            {selectedTagSlugs.length > 0 && (
-                <section aria-labelledby="selected-tags-title">
-                    <h3 id="selected-tags-title">Tags sélectionnés</h3>
-                    <ul>
-                        {tags
-                            .filter((tag) => selectedTagSlugs.includes(tag.slug))
-                            .map((tag) => (
-                                <li key={tag.id} className="flex items-center gap-2">
-                                    <Badge variant={getTagBadgeVariant(tag.style)}>{tag.name}</Badge>
-                                    <Button
-                                        onClick={() => updateTags(tag.slug)}
-                                        size="sm"
-                                        type="button"
-                                        variant="ghost"
-                                    >
-                                        Retirer
-                                    </Button>
-                                </li>
-                            ))}
-                    </ul>
-                    </section>
-            )}
-            {(search.trim() || selectedTagSlugs.length > 0) && (
-                <button onClick={() => router.push('/articles')} type="button">
-                    Réinitialiser les critères
-                </button>
-            )}
+            </div>
         </section>
     )
 }

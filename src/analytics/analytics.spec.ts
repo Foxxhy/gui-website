@@ -78,6 +78,18 @@ describe('analyticsComputeStats', () => {
         expect(stats.total).toBeGreaterThan(0)
         expect(stats.pageViews).toBeGreaterThan(0)
         expect(stats.pages.length).toBeGreaterThan(0)
+        expect(stats.timeline).toHaveLength(6)
+    })
+
+    it('builds a 7-day timeline', () => {
+        const stats = analyticsComputeStats(analyticsEvents, '7days')
+        expect(stats.timeline).toHaveLength(7)
+    })
+
+    it('builds a today timeline with hourly buckets', () => {
+        const stats = analyticsComputeStats(analyticsEvents, 'today')
+        expect(stats.timeline).toHaveLength(6)
+        expect(stats.timeline[0]?.label).toBe('00h')
     })
 })
 

@@ -1,4 +1,4 @@
-import { PageSections } from '@/components'
+import { PageSections, PublicBreadcrumb } from '@/components'
 import { AnalyticsTracker } from '@/analytics'
 import { serviceContent, serviceFeature } from '@/services'
 import { notFound } from 'next/navigation'
@@ -13,7 +13,15 @@ export default async function AssociationPage() {
     return (
         <>
             <AnalyticsTracker path="/association" />
-            <PageSections sections={page.sections} features={features} />
+            <div className="space-y-6">
+                <PublicBreadcrumb
+                    items={[
+                        { label: 'Accueil', href: '/' },
+                        { label: 'L’association' },
+                    ]}
+                />
+                <PageSections sections={page.sections} features={features} />
+            </div>
         </>
     )
 }

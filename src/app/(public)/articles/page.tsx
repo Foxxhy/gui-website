@@ -1,4 +1,11 @@
-import { ArticleFilters, ArticleList, ArticlePagination } from '@/components'
+import {
+    ArticleList,
+    ArticlePagination,
+    ArticlesEmptyState,
+    ArticleSearchFilters,
+    ArticleTagFilters,
+    PublicBreadcrumb,
+} from '@/components'
 import { AnalyticsTracker } from '@/analytics'
 import { configApp } from '@/configs'
 import { serviceContent, serviceFeature, serviceTag } from '@/services'
@@ -24,6 +31,7 @@ export default async function ArticlesPage({ searchParams }: PageProps<'/article
         params.tags,
         new Set(tags.map((tag) => tag.slug))
     )
+    const hasActiveFilters = Boolean(search || tagSlugs.length)
     const pagination = await serviceContent.getPublishedArticlesPage({
         search,
         tagSlugs,
@@ -35,24 +43,45 @@ export default async function ArticlesPage({ searchParams }: PageProps<'/article
         <>
             <AnalyticsTracker path="/articles" />
             <div className="space-y-6">
+                <PublicBreadcrumb
+                    items={[
+                        { label: 'Accueil', href: '/' },
+                        { label: 'Articles' },
+                    ]}
+                />
                 <h1 className="font-heading text-3xl font-semibold">Articles</h1>
-                <ArticleFilters search={search} selectedTagSlugs={tagSlugs} tags={tags} />
-                {pagination.total === 0 ? (
-                    <p>Aucun article ne correspond à votre recherche.</p>
-                ) : (
-                    <>
-                        <p>
-                            {pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé
-                            {pagination.total > 1 ? 's' : ''}.
-                        </p>
-                        <ArticleList articles={pagination.articles} />
-                        <ArticlePagination
-                            pagination={pagination}
+                <ArticleSearchFilters
+                    search={search}
+                    selectedTagSlugs={tagSlugs}
+                    tags={tags}
+                />
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                    <div className="min-w-0 flex-1 space-y-4">
+                        {pagination.total === 0 ? (
+                            <ArticlesEmptyState hasActiveFilters={hasActiveFilters} />
+                        ) : (
+                            <>
+                                <p>
+                                    {pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé
+                                    {pagination.total > 1 ? 's' : ''}.
+                                </p>
+                                <ArticleList articles={pagination.articles} />
+                                <ArticlePagination
+                                    pagination={pagination}
+                                    search={search}
+                                    tagSlugs={tagSlugs}
+                                />
+                            </>
+                        )}
+                    </div>
+                    <aside className="shrink-0 lg:sticky lg:top-8 lg:w-56">
+                        <ArticleTagFilters
                             search={search}
-                            tagSlugs={tagSlugs}
+                            selectedTagSlugs={tagSlugs}
+                            tags={tags}
                         />
-                    </>
-                )}
+                    </aside>
+                </div>
             </div>
         </>
     )
