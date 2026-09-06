@@ -1,7 +1,12 @@
+import { mockStore } from '@/repositories/mock-store'
 import { serviceAnalytics } from '@/services/analytics'
 import { serviceContact } from './contact'
 
 describe('serviceContact', () => {
+    beforeEach(() => {
+        mockStore.reset()
+    })
+
     it('returns the contact form configuration with sorted fields', async () => {
         const configuration = await serviceContact.getConfiguration()
         const orders = configuration.fields.map((field) => field.order)
@@ -38,9 +43,12 @@ describe('serviceContact', () => {
         trackEvent.mockRestore()
     })
 
-    it('simulates a configuration mutation', async () => {
-        await expect(serviceContact.simulateConfigurationMutation()).resolves.toMatchObject({
+    it('updates configuration', async () => {
+        await expect(
+            serviceContact.updateConfiguration({ title: 'Nouveau titre' })
+        ).resolves.toMatchObject({
             success: true,
+            data: { title: 'Nouveau titre' },
         })
     })
 })

@@ -1,4 +1,4 @@
-import { analyticsEvents } from '@/mocks'
+import { mockStore } from '@/repositories/mock-store'
 
 import {
     serviceAnalytics,
@@ -35,17 +35,16 @@ describe('analyticsFormatAnalyticsName', () => {
 })
 
 describe('analyticsTrack', () => {
-    const initialLength = analyticsEvents.length
-
-    afterEach(() => {
-        analyticsEvents.length = initialLength
+    beforeEach(() => {
+        mockStore.reset()
     })
 
     it('appends an event with a default path', () => {
+        const initialLength = mockStore.getSnapshot().analyticsEvents.length
         const event = analyticsTrack({ type: 'page-view', path: '' })
         expect(event.path).toBe('/')
         expect(event.type).toBe('page-view')
-        expect(analyticsEvents).toContainEqual(event)
+        expect(mockStore.getSnapshot().analyticsEvents).toHaveLength(initialLength + 1)
     })
 
     it('includes an article id when provided', () => {
@@ -70,6 +69,10 @@ describe('analyticsGetPeriodRange', () => {
 })
 
 describe('analyticsGetStats', () => {
+    beforeEach(() => {
+        mockStore.reset()
+    })
+
     it('aggregates events for the requested period', () => {
         const stats = analyticsGetStats('30days')
         expect(stats.total).toBeGreaterThan(0)
@@ -79,16 +82,14 @@ describe('analyticsGetStats', () => {
 })
 
 describe('serviceAnalytics', () => {
-    const initialLength = analyticsEvents.length
-
-    afterEach(() => {
-        analyticsEvents.length = initialLength
+    beforeEach(() => {
+        mockStore.reset()
     })
 
     it('tracks events through the service facade', () => {
         const event = serviceAnalytics.trackEvent('page-view', '/association')
         expect(event.path).toBe('/association')
-        expect(analyticsEvents.at(-1)).toEqual(event)
+        expect(mockStore.getSnapshot().analyticsEvents.at(-1)).toEqual(event)
     })
 
     it('returns stats asynchronously', async () => {

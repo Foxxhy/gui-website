@@ -1,25 +1,20 @@
-import { contactFormConfiguration } from '@/mocks'
+import { repositoryContact } from '@/repositories'
 import { serviceAnalytics } from '@/services/analytics'
 import { serviceValidationLimits, serviceIsValidEmail, serviceToTrimmedString } from '@/services/validation'
 import type {
     IActionResult,
-    IContactField,
     IContactFormConfiguration,
     IFieldErrors,
 } from '@/types'
 
-const sortedFields = (fields: IContactField[]) =>
-    [...fields].sort((first, second) => first.order - second.order)
-
 export const serviceContact = {
-    getConfiguration: async (): Promise<IContactFormConfiguration> => ({
-        ...contactFormConfiguration,
-        fields: sortedFields(contactFormConfiguration.fields),
-    }),
+    getConfiguration: async (): Promise<IContactFormConfiguration> =>
+        repositoryContact.getConfiguration(),
     submit: async (formData: FormData): Promise<IActionResult> => {
+        const configuration = repositoryContact.getConfiguration()
         const errors: IFieldErrors = {}
 
-        for (const field of contactFormConfiguration.fields) {
+        for (const field of configuration.fields) {
             const limit = field.type === 'textarea' ? serviceValidationLimits.message : serviceValidationLimits.name
             const rawValue = formData.get(field.technicalName)
             const value = serviceToTrimmedString(rawValue, limit)
@@ -47,15 +42,22 @@ export const serviceContact = {
             return { success: false, message: 'Le formulaire contient des erreurs.', errors }
         }
 
-        const result = {
-            success: true,
-            message: 'Votre message a été enregistré par la simulation. Aucun e-mail n’a été envoyé.',
-        }
+        const submission = Object.fromEntries(
+            configuration.fields.map((field) => [
+                field.technicalName,
+                serviceToTrimmedString(formData.get(field.technicalName), serviceValidationLimits.message),
+            ])
+        )
+        repositoryContact.saveSubmission(submission)
         serviceAnalytics.trackEvent('contact-submission', '/contact')
-        return result
+
+        return {
+            success: true,
+            message: 'Votre message a été enregistré. Aucun e-mail n’a été envoyé.',
+        }
     },
-    simulateConfigurationMutation: async (): Promise<IActionResult> => ({
-        success: true,
-        message: 'Configuration mise à jour dans la simulation. Elle sera réinitialisée au rechargement.',
-    }),
+    updateConfiguration: async (
+        values: Partial<IContactFormConfiguration>
+    ): Promise<IActionResult<IContactFormConfiguration>> =>
+        repositoryContact.updateConfiguration(values),
 }

@@ -1,9 +1,12 @@
-import { articles } from '@/mocks'
+import { mockStore } from '@/repositories/mock-store'
 import { IStatus } from '@/types'
-
 import { serviceContent } from './content'
 
 describe('serviceContent', () => {
+    beforeEach(() => {
+        mockStore.reset()
+    })
+
     it('returns published articles', async () => {
         const published = await serviceContent.getPublishedArticles()
         expect(published.every((article) => article.status === IStatus.PUBLISHED)).toBe(true)
@@ -27,8 +30,20 @@ describe('serviceContent', () => {
         )
     })
 
+    it('filters articles by tag slugs', async () => {
+        const page = await serviceContent.getPublishedArticlesPage({
+            page: 1,
+            limit: 10,
+            tagSlugs: ['association'],
+        })
+        expect(page.articles.length).toBeGreaterThan(0)
+        expect(page.articles.every((article) => article.tags?.some((tag) => tag.slug === 'association'))).toBe(true)
+    })
+
     it('finds articles and pages by identifiers', async () => {
-        await expect(serviceContent.getArticleById('article-1')).resolves.toEqual(articles[0])
+        await expect(serviceContent.getArticleById('article-1')).resolves.toMatchObject({
+            id: 'article-1',
+        })
         await expect(serviceContent.getPublishedArticleBySlug('bienvenue-association')).resolves.toMatchObject({
             id: 'article-1',
         })
@@ -37,23 +52,39 @@ describe('serviceContent', () => {
         })
     })
 
-    it('validates article mutations', async () => {
+    it('rejects invalid article mutations', async () => {
         await expect(
-            serviceContent.simulateArticleMutation('Créé.', {
-                title: '',
-                slug: 'bad slug',
-                content: '',
-            })
+            serviceContent.createArticle(
+                {
+                    title: '',
+                    slug: 'bad slug',
+                    content: '',
+                },
+                mockStore.getSnapshot().users[0]
+            )
         ).resolves.toMatchObject({ success: false })
     })
 
-    it('accepts a valid article mutation simulation', async () => {
+    it('creates a valid article', async () => {
+        const author = mockStore.getSnapshot().users[0]
         await expect(
-            serviceContent.simulateArticleMutation('Créé.', {
-                title: 'Titre',
-                slug: 'titre-unique-test',
-                content: 'Contenu',
-                status: IStatus.DRAFT,
+            serviceContent.createArticle(
+                {
+                    title: 'Titre',
+                    slug: 'titre-unique-test',
+                    content: 'Contenu',
+                    status: IStatus.DRAFT,
+                },
+                author
+            )
+        ).resolves.toMatchObject({ success: true })
+    })
+
+    it('updates a page', async () => {
+        await expect(
+            serviceContent.updatePage('page-association', {
+                title: 'Association modifiée',
+                content: 'Contenu mis à jour',
             })
         ).resolves.toMatchObject({ success: true })
     })

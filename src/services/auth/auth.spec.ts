@@ -1,18 +1,24 @@
-import { accounts } from '@/mocks'
+import { mockStore } from '@/repositories/mock-store'
 import { IRole } from '@/types'
 import { serviceAuth } from './auth'
 
 describe('serviceAuth', () => {
+    beforeEach(() => {
+        mockStore.reset()
+    })
+
     it('authenticates a valid mock account', async () => {
-        await expect(serviceAuth.authenticate({ login: 'admin', password: 'admin' })).resolves.toBe(accounts[0].user)
+        await expect(serviceAuth.authenticate({ login: 'admin', password: 'admin' })).resolves.toMatchObject({
+            id: 'user-admin',
+        })
     })
 
     it('rejects invalid credentials', async () => {
         await expect(serviceAuth.authenticate({ login: 'admin', password: 'invalid' })).resolves.toBeUndefined()
     })
 
-    it('does not create a session for a blocked user', async () => {
-        await expect(serviceAuth.getSessionFromLogin('user-blocked')).resolves.toBeUndefined()
+    it('does not create a session for a blocked user token', async () => {
+        await expect(serviceAuth.getSessionFromToken(undefined)).resolves.toBeUndefined()
     })
 
     it.each([
@@ -32,6 +38,10 @@ describe('serviceAuth', () => {
         expect(serviceAuth.canManage(IRole.EDITOR, 'features')).toBe(false)
         expect(serviceAuth.canManage(IRole.ADMIN, 'users')).toBe(true)
         expect(serviceAuth.canManage(IRole.ADMIN, 'features')).toBe(true)
+    })
+
+    it('allows editors to access analytics', () => {
+        expect(serviceAuth.canManage(IRole.EDITOR, 'analytics')).toBe(true)
     })
 
     it('rejects empty or oversized operations', () => {

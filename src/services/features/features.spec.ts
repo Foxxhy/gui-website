@@ -1,25 +1,22 @@
-import { featureFlags } from '@/mocks'
-
+import { mockStore } from '@/repositories/mock-store'
 import { serviceFeature } from './features'
 
 describe('serviceFeature', () => {
-    const originalFlags = { ...featureFlags }
-
-    afterEach(() => {
-        Object.assign(featureFlags, originalFlags)
+    beforeEach(() => {
+        mockStore.reset()
     })
 
     it('returns a copy of the feature flags', async () => {
         const flags = await serviceFeature.getFlags()
-        expect(flags).toEqual(originalFlags)
+        expect(flags).toEqual(mockStore.getSnapshot().featureFlags)
         flags.home = false
-        expect(featureFlags.home).toBe(originalFlags.home)
+        expect(mockStore.getSnapshot().featureFlags.home).toBe(true)
     })
 
     it('updates a known feature flag', async () => {
         const result = await serviceFeature.updateFlag('contact', false)
         expect(result.success).toBe(true)
-        expect(featureFlags.contact).toBe(false)
+        expect(mockStore.getSnapshot().featureFlags.contact).toBe(false)
         expect(result.data?.contact).toBe(false)
     })
 
