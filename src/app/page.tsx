@@ -1,4 +1,5 @@
-import { PageSections, PublicNavigation } from '@/components'
+import { PageSections, PublicPageFrame } from '@/components'
+import { Button } from '@/components/ui/button'
 import { AnalyticsTracker } from '@/analytics'
 import { serviceContent, serviceFeature } from '@/services'
 import { notFound } from 'next/navigation'
@@ -17,8 +18,15 @@ export default async function Home() {
     return (
         <>
             <AnalyticsTracker path="/" />
-            <PublicNavigation features={features} />
-            <main><PageSections sections={page.sections} featuredArticles={articles} features={features} /></main>
+            <PublicPageFrame features={features}>
+                <main>
+                    <section aria-label="Exemple shadcn/ui" className="flex gap-2 p-4">
+                        <Button>Exemple shadcn</Button>
+                        <Button variant="outline">Variante outline</Button>
+                    </section>
+                    <PageSections sections={page.sections} featuredArticles={articles} features={features} />
+                </main>
+            </PublicPageFrame>
         </>
     )
 }

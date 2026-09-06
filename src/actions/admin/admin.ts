@@ -10,6 +10,7 @@ import {
     serviceTag,
     serviceUser,
 } from '@/services'
+import { parsePageSectionsFromFormData } from '@/services/content/page-sections'
 import { IStatus, TAG_STYLES, type IActionResult, type ITagStyle } from '@/types'
 import type { IServiceAdminArea } from '@/types'
 
@@ -59,7 +60,17 @@ export const actionSubmitAdminMutation = async (
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'pages') {
-        const result = await serviceContent.updatePage(String(formData.get('id') ?? ''), values)
+        const pageId = String(formData.get('id') ?? '')
+        const existing = (await serviceContent.getPages()).find((page) => page.id === pageId)
+        if (!existing) return { success: false, message: 'Page introuvable.' }
+
+        const sections = parsePageSectionsFromFormData(formData, existing.sections)
+        const result = await serviceContent.updatePage(pageId, { ...values, sections })
+        if (result.success) {
+            revalidatePath('/')
+            revalidatePath('/association')
+            revalidatePath('/gestion-des-donnees')
+        }
         return { success: result.success, message: result.message, errors: result.errors }
     }
     if (area === 'users') {

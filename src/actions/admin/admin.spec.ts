@@ -28,6 +28,7 @@ jest.mock('@/services', () => ({
         createArticle: jest.fn(),
         updateArticle: jest.fn(),
         updatePage: jest.fn(),
+        getPages: jest.fn(),
     },
     serviceFeature: {
         updateFlag: jest.fn(),
@@ -196,6 +197,20 @@ describe('actionSubmitAdminMutation', () => {
     it('updates a page', async () => {
         jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
         jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
+        jest.mocked(serviceContent.getPages).mockResolvedValue([
+            {
+                id: 'page-home',
+                title: 'Accueil',
+                slug: 'accueil',
+                content: 'Ancien contenu',
+                sections: [
+                    { id: 'home-hero', type: 'hero', title: 'Association POC', content: 'Intro', order: 1 },
+                ],
+                seo: {},
+                createdAt: '2026-01-01T09:00:00.000Z',
+                updatedAt: '2026-01-01T09:00:00.000Z',
+            },
+        ])
         jest.mocked(serviceContent.updatePage).mockResolvedValue({
             success: true,
             message: 'Page enregistrée.',
@@ -208,6 +223,8 @@ describe('actionSubmitAdminMutation', () => {
                 id: 'page-home',
                 title: 'Accueil',
                 content: 'Contenu',
+                'section-home-hero-title': 'Nouveau titre',
+                'section-home-hero-content': 'Nouvelle intro',
             })
         )
 
@@ -217,9 +234,40 @@ describe('actionSubmitAdminMutation', () => {
                 area: 'pages',
                 title: 'Accueil',
                 content: 'Contenu',
+                sections: [
+                    {
+                        id: 'home-hero',
+                        type: 'hero',
+                        title: 'Nouveau titre',
+                        content: 'Nouvelle intro',
+                        order: 1,
+                    },
+                ],
             })
         )
+        expect(revalidatePath).toHaveBeenCalledWith('/')
+        expect(revalidatePath).toHaveBeenCalledWith('/association')
+        expect(revalidatePath).toHaveBeenCalledWith('/gestion-des-donnees')
         expect(result).toEqual({ success: true, message: 'Page enregistrée.' })
+    })
+
+    it('rejects a page mutation when the page is missing', async () => {
+        jest.mocked(serviceGetCurrentSession).mockResolvedValue(session)
+        jest.mocked(serviceAuth.canPerform).mockReturnValue(true)
+        jest.mocked(serviceContent.getPages).mockResolvedValue([])
+
+        const result = await actionSubmitAdminMutation(
+            undefined,
+            createFormData({
+                area: 'pages',
+                id: 'page-missing',
+                title: 'Titre',
+                content: 'Contenu',
+            })
+        )
+
+        expect(serviceContent.updatePage).not.toHaveBeenCalled()
+        expect(result).toEqual({ success: false, message: 'Page introuvable.' })
     })
 
     it('updates a user when an id is provided', async () => {

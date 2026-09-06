@@ -2,7 +2,7 @@ import {
     ArticleFilters,
     ArticleList,
     ArticlePagination,
-    PublicNavigation,
+    PublicPageFrame,
 } from '@/components'
 import { AnalyticsTracker } from '@/analytics'
 import { configApp } from '@/configs'
@@ -39,24 +39,25 @@ export default async function ArticlesPage({ searchParams }: PageProps<'/article
     return (
         <>
             <AnalyticsTracker path="/articles" />
-            <PublicNavigation features={features} />
-            <main>
-                <h1>Articles</h1>
-                <ArticleFilters search={search} selectedTagSlugs={tagSlugs} tags={tags} />
-                {pagination.total === 0 ? (
-                    <p>Aucun article ne correspond à votre recherche.</p>
-                ) : (
-                    <>
-                        <p>{pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé{pagination.total > 1 ? 's' : ''}.</p>
-                        <ArticleList articles={pagination.articles} />
-                        <ArticlePagination
-                            pagination={pagination}
-                            search={search}
-                            tagSlugs={tagSlugs}
-                        />
-                    </>
-                )}
-            </main>
+            <PublicPageFrame features={features}>
+                <main>
+                    <h1>Articles</h1>
+                    <ArticleFilters search={search} selectedTagSlugs={tagSlugs} tags={tags} />
+                    {pagination.total === 0 ? (
+                        <p>Aucun article ne correspond à votre recherche.</p>
+                    ) : (
+                        <>
+                            <p>{pagination.total} article{pagination.total > 1 ? 's' : ''} trouvé{pagination.total > 1 ? 's' : ''}.</p>
+                            <ArticleList articles={pagination.articles} />
+                            <ArticlePagination
+                                pagination={pagination}
+                                search={search}
+                                tagSlugs={tagSlugs}
+                            />
+                        </>
+                    )}
+                </main>
+            </PublicPageFrame>
         </>
     )
 }

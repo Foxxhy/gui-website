@@ -1,4 +1,5 @@
 import { getRepositories } from '@/repositories'
+import { validatePageSections } from '@/services/content/page-sections'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug } from '@/services/validation'
 import {
     IStatus,
@@ -142,12 +143,17 @@ export const serviceContent = {
         const existing = await getRepositories().pages.findAll().then((pages) => pages.find((page) => page.id === id))
         if (!existing) return { success: false, message: 'Page introuvable.' }
 
+        const sections = values.sections ?? existing.sections
+        const sectionError = validatePageSections(sections)
+        if (sectionError) return { success: false, message: sectionError }
+
         const merged = {
             ...values,
             id,
             slug: values.slug ?? existing.slug,
             title: values.title ?? existing.title,
             content: values.content ?? existing.content,
+            sections,
         }
         const validation = await validatePage(merged)
         if (validation) return validation as IActionResult<IPage>
@@ -156,6 +162,7 @@ export const serviceContent = {
             title: typeof values.title === 'string' ? values.title.trim() : existing.title,
             slug: values.slug ? serviceNormalizeSlug(values.slug) : existing.slug,
             content: typeof values.content === 'string' ? values.content.trim() : existing.content,
+            sections,
             updatedAt: new Date().toISOString(),
         })
         if (!updated) return { success: false, message: 'Page introuvable.' }

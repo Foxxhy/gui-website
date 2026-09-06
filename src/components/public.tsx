@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import type { ReactNode } from 'react'
 import type {
     IArticle,
     IArticlePagination,
@@ -26,6 +27,33 @@ export const PublicNavigation = ({ features }: { features: IFeatureFlags }) => (
             <li><Link href="/connexion">Connexion</Link></li>
         </ul>
     </nav>
+)
+
+export const PublicFooter = ({ features }: { features: IFeatureFlags }) => (
+    <footer>
+        <nav aria-label="Pied de page">
+            <ul>
+                {features.home && <li><Link href="/">Accueil</Link></li>}
+                {features.articles && <li><Link href="/articles">Articles</Link></li>}
+                {features.contact && <li><Link href="/contact">Contact</Link></li>}
+                <li><Link href="/gestion-des-donnees">Gestion des données</Link></li>
+            </ul>
+        </nav>
+    </footer>
+)
+
+export const PublicPageFrame = ({
+    features,
+    children,
+}: {
+    features: IFeatureFlags
+    children: ReactNode
+}) => (
+    <>
+        <PublicNavigation features={features} />
+        {children}
+        <PublicFooter features={features} />
+    </>
 )
 
 export const ArticleList = ({ articles }: { articles: IArticle[] }) => (
