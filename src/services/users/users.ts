@@ -1,11 +1,11 @@
-import { users } from '@/mocks'
+import { getRepositories } from '@/repositories'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidEmail, serviceToTrimmedString } from '@/services/validation'
 import { IRole, type IActionResult, type IUser } from '@/types'
 
 export const serviceUser = {
-    getUsers: async (): Promise<IUser[]> => users,
+    getUsers: async (): Promise<IUser[]> => getRepositories().users.findAll(),
     getUserById: async (id: string): Promise<IUser | undefined> =>
-        users.find((user) => user.id === id),
+        getRepositories().users.findById(id),
     simulateMutation: async (
         values: Partial<IUser>
     ): Promise<IActionResult<Partial<IUser>>> => {

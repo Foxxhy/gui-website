@@ -3,11 +3,13 @@ import { analyticsEvents } from '@/mocks'
 import {
     serviceAnalytics,
     analyticsFormatAnalyticsName,
-    analyticsGetPeriodRange,
-    analyticsGetStats,
-    analyticsIsKnownEventType,
     analyticsTrack,
 } from './analytics'
+import {
+    analyticsComputeStats,
+    analyticsGetPeriodRange,
+    analyticsIsKnownEventType,
+} from './stats'
 
 describe('analyticsIsKnownEventType', () => {
     it('accepts known event types', () => {
@@ -41,15 +43,15 @@ describe('analyticsTrack', () => {
         analyticsEvents.length = initialLength
     })
 
-    it('appends an event with a default path', () => {
-        const event = analyticsTrack({ type: 'page-view', path: '' })
+    it('appends an event with a default path', async () => {
+        const event = await analyticsTrack({ type: 'page-view', path: '' })
         expect(event.path).toBe('/')
         expect(event.type).toBe('page-view')
         expect(analyticsEvents).toContainEqual(event)
     })
 
-    it('includes an article id when provided', () => {
-        const event = analyticsTrack({
+    it('includes an article id when provided', async () => {
+        const event = await analyticsTrack({
             type: 'article-view',
             path: '/articles/demo',
             articleId: 'article-1',
@@ -69,9 +71,9 @@ describe('analyticsGetPeriodRange', () => {
     })
 })
 
-describe('analyticsGetStats', () => {
+describe('analyticsComputeStats', () => {
     it('aggregates events for the requested period', () => {
-        const stats = analyticsGetStats('30days')
+        const stats = analyticsComputeStats(analyticsEvents, '30days')
         expect(stats.total).toBeGreaterThan(0)
         expect(stats.pageViews).toBeGreaterThan(0)
         expect(stats.pages.length).toBeGreaterThan(0)
@@ -85,8 +87,8 @@ describe('serviceAnalytics', () => {
         analyticsEvents.length = initialLength
     })
 
-    it('tracks events through the service facade', () => {
-        const event = serviceAnalytics.trackEvent('page-view', '/association')
+    it('tracks events through the service facade', async () => {
+        const event = await serviceAnalytics.trackEvent('page-view', '/association')
         expect(event.path).toBe('/association')
         expect(analyticsEvents.at(-1)).toEqual(event)
     })

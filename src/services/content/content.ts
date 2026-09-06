@@ -1,4 +1,4 @@
-import { articles, pages } from '@/mocks'
+import { getRepositories } from '@/repositories'
 import { serviceValidationLimits, serviceFieldErrors, serviceIsValidSlug, serviceNormalizeSlug } from '@/services/validation'
 import {
     IStatus,
@@ -15,7 +15,9 @@ const simulatedResult = <T>(message: string, data?: T): IActionResult<T> => ({
     data,
 })
 
-const validateArticle = (values: Partial<IArticle>): IActionResult<Partial<IArticle>> | undefined => {
+const validateArticle = async (values: Partial<IArticle>): Promise<IActionResult<Partial<IArticle>> | undefined> => {
+    const { articles } = getRepositories()
+    const allArticles = await articles.findAll()
     const slug = serviceNormalizeSlug(values.slug)
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
@@ -25,11 +27,13 @@ const validateArticle = (values: Partial<IArticle>): IActionResult<Partial<IArti
         ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > serviceValidationLimits.content ? 'Le contenu est trop long.' : undefined],
         ['status', values.status && !Object.values(IStatus).includes(values.status) ? 'Le statut est invalide.' : undefined],
     )
-    if (articles.some((article) => article.slug === slug && article.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
+    if (allArticles.some((article) => article.slug === slug && article.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
     return Object.keys(errors).length ? { success: false, message: 'L’article contient des erreurs.', errors } : undefined
 }
 
-const validatePage = (values: Partial<IPage>): IActionResult<Partial<IPage>> | undefined => {
+const validatePage = async (values: Partial<IPage>): Promise<IActionResult<Partial<IPage>> | undefined> => {
+    const { pages } = getRepositories()
+    const allPages = await pages.findAll()
     const slug = serviceNormalizeSlug(values.slug)
     const rawTitle = typeof values.title === 'string' ? values.title.trim() : ''
     const rawContent = typeof values.content === 'string' ? values.content.trim() : ''
@@ -38,21 +42,25 @@ const validatePage = (values: Partial<IPage>): IActionResult<Partial<IPage>> | u
         ['slug', !serviceIsValidSlug(slug) ? 'Le slug est invalide.' : undefined],
         ['content', !rawContent ? 'Le contenu est obligatoire.' : rawContent.length > serviceValidationLimits.content ? 'Le contenu est trop long.' : undefined],
     )
-    if (pages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
+    if (allPages.some((page) => page.slug === slug && page.id !== values.id)) errors.slug = 'Ce slug est déjà utilisé.'
     return Object.keys(errors).length ? { success: false, message: 'La page contient des erreurs.', errors } : undefined
 }
 
 export const serviceContent = {
-    getPublishedArticles: async (): Promise<IArticle[]> =>
-        articles.filter((article) => article.status === IStatus.PUBLISHED),
+    getPublishedArticles: async (): Promise<IArticle[]> => {
+        const { articles } = getRepositories()
+        const allArticles = await articles.findAll()
+        return allArticles.filter((article) => article.status === IStatus.PUBLISHED)
+    },
     getPublishedArticlesPage: async (
         query: IArticleQuery
     ): Promise<IArticlePagination> => {
+        const { articles } = getRepositories()
         const search = query.search?.trim().toLocaleLowerCase('fr-FR')
         const tagSlugs = [...new Set(query.tagSlugs ?? [])]
         const limit = Number.isInteger(query.limit) && query.limit > 0 ? query.limit : 10
 
-        let filteredArticles = articles.filter(
+        let filteredArticles = (await articles.findAll()).filter(
             (article) => article.status === IStatus.PUBLISHED
         )
 
@@ -84,22 +92,19 @@ export const serviceContent = {
             totalPages,
         }
     },
-    getAllArticles: async (): Promise<IArticle[]> => articles,
+    getAllArticles: async (): Promise<IArticle[]> => getRepositories().articles.findAll(),
     getPublishedArticleBySlug: async (slug: string): Promise<IArticle | undefined> =>
-        articles.find(
-            (article) =>
-                article.slug === slug && article.status === IStatus.PUBLISHED
-        ),
+        getRepositories().articles.findPublishedBySlug(slug),
     getArticleById: async (id: string): Promise<IArticle | undefined> =>
-        articles.find((article) => article.id === id),
+        getRepositories().articles.findById(id),
     getPageBySlug: async (slug: string): Promise<IPage | undefined> =>
-        pages.find((page) => page.slug === slug),
-    getPages: async (): Promise<IPage[]> => pages,
+        getRepositories().pages.findBySlug(slug),
+    getPages: async (): Promise<IPage[]> => getRepositories().pages.findAll(),
     simulateArticleMutation: async (
         message: string,
         values: Partial<IArticle>
-    ): Promise<IActionResult<Partial<IArticle>>> => validateArticle(values) ?? simulatedResult(message, values),
+    ): Promise<IActionResult<Partial<IArticle>>> => (await validateArticle(values)) ?? simulatedResult(message, values),
     simulatePageMutation: async (
         values: Partial<IPage>
-    ): Promise<IActionResult<Partial<IPage>>> => validatePage(values) ?? simulatedResult('Page enregistrée.', values),
+    ): Promise<IActionResult<Partial<IPage>>> => (await validatePage(values)) ?? simulatedResult('Page enregistrée.', values),
 }

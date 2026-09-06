@@ -57,6 +57,7 @@ Le projet sépare les responsabilités afin de pouvoir remplacer les données mo
 | [src/actions](src/actions) | Server Actions pour l’authentification, le contact et les mutations d’administration. |
 | [src/services](src/services) | Logique métier, accès aux données et gestion de session. |
 | [src/mocks](src/mocks) | Données seed, comptes de démonstration et configurations en mémoire. |
+| [src/repositories](src/repositories) | Abstraction d’accès aux données (mocks ou MongoDB). |
 | [src/types](src/types) | Contrats TypeScript partagés. |
 
 Les imports utilisent l’alias `@/*` vers `src/*`. Les interfaces suivent la convention `I*` : `IArticle`, `IUser`, `ISession` et `IActionResult`.
@@ -77,7 +78,7 @@ Les routes d’administration sont protégées par le proxy dans [src/proxy.ts](
 
 ## Données mockées
 
-Les seeds, comptes et configurations sont centralisés dans `src/mocks`. Les services de `src/services` constituent l’abstraction à remplacer par une API ou une base de données dans une version ultérieure.
+Les seeds, comptes et configurations sont centralisés dans `src/mocks`. Les services de `src/services` passent par la couche `src/repositories`, qui peut lire les mocks ou MongoDB selon `DATA_SOURCE`. Voir [docs/mongodb-setup.md](docs/mongodb-setup.md) pour la configuration Atlas (cluster `cluster0`, bases `gui-website-dev` / `gui-website-recette` / `gui-website-prod`).
 
 Toutes les créations, modifications, suppressions et soumissions sont simulées. Elles retournent une réponse utilisateur mais ne modifient pas les données seed : une relecture ou un rechargement affiche donc les données initiales. En conséquence, les modifications de configuration du formulaire ne sont pas reflétées dans le formulaire public après rechargement, conformément au périmètre de démonstration retenu.
 

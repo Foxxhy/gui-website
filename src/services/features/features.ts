@@ -1,11 +1,13 @@
-import { featureFlags } from '@/mocks'
+import { getRepositories } from '@/repositories'
 import type { IActionResult, IFeatureFlags, IFeatureKey } from '@/types'
 
+const featureKeys: IFeatureKey[] = ['home', 'articles', 'contact']
+
 const hasFeatureKey = (key: string): key is IFeatureKey =>
-    key in featureFlags
+    featureKeys.includes(key as IFeatureKey)
 
 export const serviceFeature = {
-    getFlags: async (): Promise<IFeatureFlags> => ({ ...featureFlags }),
+    getFlags: async (): Promise<IFeatureFlags> => getRepositories().settings.getFeatureFlags(),
     updateFlag: async (
         key: string,
         enabled: boolean
@@ -17,11 +19,11 @@ export const serviceFeature = {
             }
         }
 
-        featureFlags[key] = enabled
+        const data = await getRepositories().settings.updateFeatureFlag(key, enabled)
         return {
             success: true,
             message: 'Statut de la fonctionnalité mis à jour dans la simulation.',
-            data: { ...featureFlags },
+            data,
         }
     },
 }

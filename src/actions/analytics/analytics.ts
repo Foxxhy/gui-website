@@ -12,5 +12,5 @@ export const actionTrackAnalytics = async ({
     path: string
     articleId?: string
 }) => {
-    serviceAnalytics.trackEvent(type, path, articleId)
+    await serviceAnalytics.trackEvent(type, path, articleId)
 }
