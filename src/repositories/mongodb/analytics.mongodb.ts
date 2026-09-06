@@ -30,7 +30,7 @@ const eventFromDocument = (document: IAnalyticsEventDocument): IAnalyticsEvent =
     type: document.type,
     path: document.path,
     articleId: document.articleId,
-    timestamp: document.timestamp,
+    timestamp: document.timestamp.toISOString(),
 })
 
 export const mongoAnalyticsRepository: IAnalyticsRepository = {
@@ -42,7 +42,7 @@ export const mongoAnalyticsRepository: IAnalyticsRepository = {
             type: event.type,
             path: event.path,
             articleId: event.articleId,
-            timestamp: event.timestamp,
+            timestamp: new Date(event.timestamp),
         }
         await db.collection<IAnalyticsEventDocument>(mongoCollections.analyticsEvents).insertOne(document)
         return event

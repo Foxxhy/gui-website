@@ -12,19 +12,25 @@ const getAuthSecret = () => {
     return 'association-poc-dev-secret'
 }
 
-const encodePayload = (payload: { userId: string; exp: number }) =>
+type ISessionPayload = {
+    userId: string
+    exp: number
+    sessionVersion: number
+}
+
+const encodePayload = (payload: ISessionPayload) =>
     Buffer.from(JSON.stringify(payload)).toString('base64url')
 
 const signPayload = (payload: string) =>
     createHmac('sha256', getAuthSecret()).update(payload).digest('base64url')
 
-export const createSessionToken = (userId: string): string => {
+export const createSessionToken = (userId: string, sessionVersion: number): string => {
     const exp = Math.floor(Date.now() / 1000) + configApp.session.cookieOptions.maxAge
-    const payload = encodePayload({ userId, exp })
+    const payload = encodePayload({ userId, exp, sessionVersion })
     return `${payload}.${signPayload(payload)}`
 }
 
-export const parseSessionToken = (token?: string): { userId: string } | undefined => {
+export const parseSessionToken = (token?: string): { userId: string; sessionVersion: number } | undefined => {
     if (!token) return undefined
 
     const separatorIndex = token.lastIndexOf('.')
@@ -43,10 +49,14 @@ export const parseSessionToken = (token?: string): { userId: string } | undefine
         const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString()) as {
             userId?: string
             exp?: number
+            sessionVersion?: number
         }
         if (!parsed.userId || typeof parsed.exp !== 'number') return undefined
         if (parsed.exp < Math.floor(Date.now() / 1000)) return undefined
-        return { userId: parsed.userId }
+        return {
+            userId: parsed.userId,
+            sessionVersion: typeof parsed.sessionVersion === 'number' ? parsed.sessionVersion : 0,
+        }
     } catch {
         return undefined
     }

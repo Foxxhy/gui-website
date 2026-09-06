@@ -27,6 +27,21 @@ describe('getRepositories', () => {
         })
     })
 
+    it('exposes contact submissions through the mock factory', async () => {
+        delete process.env.DATA_SOURCE
+        const { getRepositories } = await import('./factory')
+        const repositories = getRepositories()
+        const submission = await repositories.contactSubmissions.create({
+            id: 'submission-test',
+            values: { email: 'test@example.com' },
+            submittedAt: '2026-01-01T00:00:00.000Z',
+        })
+        expect(submission).toMatchObject({
+            id: 'submission-test',
+            values: { email: 'test@example.com' },
+        })
+    })
+
     it('returns mongodb repositories when configured', async () => {
         process.env.DATA_SOURCE = 'mongodb'
         process.env.MONGODB_URI = 'mongodb+srv://user:secret@cluster0.example.mongodb.net/'

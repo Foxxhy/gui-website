@@ -4,10 +4,6 @@ export interface IFeatured {
     featureFlag?: boolean
 }
 
-export interface ISettings {
-    darkMode?: boolean
-}
-
 export interface ISeo {
   metaTitle?: string
   metaDescription?: string

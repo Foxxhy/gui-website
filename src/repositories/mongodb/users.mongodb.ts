@@ -73,6 +73,16 @@ export const mongoUserRepository: IUserRepository = {
         )
         return result.matchedCount > 0
     },
+    incrementSessionVersion: async (userId) => {
+        const db = await getMongoDatabase()
+        await ensureUserIndexes(db)
+        const result = await db.collection<IUserDocument>(mongoCollections.users).findOneAndUpdate(
+            { _id: userId },
+            { $inc: { sessionVersion: 1 }, $set: { updatedAt: new Date().toISOString() } },
+            { returnDocument: 'after' },
+        )
+        return result?.sessionVersion ?? 0
+    },
     createUser: async (user) => {
         const db = await getMongoDatabase()
         await ensureUserIndexes(db)

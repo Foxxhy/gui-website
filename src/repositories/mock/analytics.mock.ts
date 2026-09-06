@@ -9,8 +9,9 @@ export const mockAnalyticsRepository: IAnalyticsRepository = {
         return event
     },
     findBetween: async (start, end) =>
-        analyticsEvents.filter(
-            ({ timestamp }) => timestamp >= start && timestamp <= end
-        ),
+        analyticsEvents.filter(({ timestamp }) => {
+            const date = new Date(timestamp)
+            return date >= start && date <= end
+        }),
     getStats: async (period: AnalyticsPeriod) => analyticsComputeStats(analyticsEvents, period),
 }

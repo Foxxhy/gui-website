@@ -1,6 +1,6 @@
 import { IRole, type IUser } from './user'
 
-export interface IAuthenticatedUser extends IUser {}
+export type IAuthenticatedUser = IUser
 
 export interface ISession {
     user: IAuthenticatedUser
@@ -9,13 +9,6 @@ export interface ISession {
 export interface ICredentials {
     login: string
     password: string
-}
-
-export interface IAccount {
-    id: string
-    userId: string
-    login: string
-    passwordHash: string
 }
 
 export const ADMINISTRATION_PERMISSIONS = {
@@ -38,6 +31,22 @@ export const MUTATION_AREAS = [
     'users',
     'features',
 ] as const satisfies readonly IServiceAdminArea[]
+
+export const ADMIN_OPERATIONS = [
+    'créé',
+    'modifiée',
+    'modifié',
+    'supprimé',
+    'champ ajouté',
+    'champ modifié',
+    'champ supprimé',
+    'ordre modifié',
+] as const
+
+export type IAdminOperation = (typeof ADMIN_OPERATIONS)[number]
+
+export const isAdminOperation = (value: string): value is IAdminOperation =>
+    (ADMIN_OPERATIONS as readonly string[]).includes(value)
 
 export const canManageArea = (role: IRole, area: IServiceAdminArea): boolean => {
     if (role === IRole.BLOCKED) return false

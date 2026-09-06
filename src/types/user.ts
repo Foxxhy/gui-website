@@ -13,6 +13,7 @@ export interface IUser {
   pseudonym: string
   role: IRole
   avatar?: IMedia
+  sessionVersion: number
   createdAt: string
   updatedAt: string
 }
@@ -29,6 +30,7 @@ export interface IUserRepository {
   findAccountByLogin: (login: string) => Promise<IUserCredentials | undefined>
   findAccountByUserId: (userId: string) => Promise<IUserCredentials | undefined>
   updatePasswordHash: (userId: string, passwordHash: string) => Promise<boolean>
+  incrementSessionVersion: (userId: string) => Promise<number>
   createUser: (user: IUser) => Promise<IUser>
   createUserWithAccount: (
     user: IUser,

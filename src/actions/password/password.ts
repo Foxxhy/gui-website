@@ -1,7 +1,19 @@
 'use server'
 
-import { serviceAuth, serviceGetCurrentSession, servicePassword, serviceReadPassword } from '@/services'
+import { cookies } from 'next/headers'
+import { configApp } from '@/configs'
+import { createSessionToken } from '@/services/auth/session-token'
+import { serviceAuth, serviceGetCurrentSession, servicePassword, serviceReadPassword, serviceSessionCookie } from '@/services'
 import type { IActionResult } from '@/types'
+
+const refreshSessionCookie = async (userId: string, sessionVersion: number) => {
+    const cookieStore = await cookies()
+    cookieStore.set(
+        serviceSessionCookie,
+        createSessionToken(userId, sessionVersion),
+        configApp.session.cookieOptions
+    )
+}
 
 export const actionChangeOwnPassword = async (
     _previousState: IActionResult | undefined,
@@ -12,11 +24,17 @@ export const actionChangeOwnPassword = async (
         return { success: false, message: 'Vous devez être connecté pour modifier votre mot de passe.' }
     }
 
-    return servicePassword.changeOwnPassword(session.user.id, {
+    const result = await servicePassword.changeOwnPassword(session.user.id, {
         currentPassword: serviceReadPassword(formData.get('currentPassword')),
         newPassword: serviceReadPassword(formData.get('newPassword')),
         confirmPassword: serviceReadPassword(formData.get('confirmPassword')),
     })
+
+    if (result.success && typeof result.sessionVersion === 'number') {
+        await refreshSessionCookie(session.user.id, result.sessionVersion)
+    }
+
+    return result
 }
 
 export const actionAdminChangeUserPassword = async (

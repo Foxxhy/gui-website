@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { IActionResult, IContactFormConfiguration } from '@/types'
+import type { IAdminOperation, IActionResult, IContactFormConfiguration } from '@/types'
 import { AdminPreview, type IAdminPreview } from './preview'
 import { ContactField } from './public'
 
@@ -151,7 +151,7 @@ export const AdminMutationForm = ({
     actionsClassName,
 }: {
     area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
-    operation: string
+    operation: IAdminOperation
     children: React.ReactNode
     preview?: IAdminPreview
     submitLabel?: string

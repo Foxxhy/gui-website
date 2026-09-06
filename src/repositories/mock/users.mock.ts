@@ -27,6 +27,13 @@ export const repositoryUserMock: IUserRepository = {
         account.passwordHash = passwordHash
         return true
     },
+    incrementSessionVersion: async (userId: string): Promise<number> => {
+        const user = users.find((candidate) => candidate.id === userId)
+        if (!user) return 0
+        user.sessionVersion += 1
+        user.updatedAt = new Date().toISOString()
+        return user.sessionVersion
+    },
     createUser: async (user) => {
         users.push(user)
         return user

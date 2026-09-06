@@ -1,5 +1,13 @@
 import { articles, tags } from '@/mocks'
 import type { ITagRepository } from '@/repositories/types'
+import type { ITag } from '@/types'
+
+const propagateTagUpdate = (updatedTag: ITag) => {
+    for (const article of articles) {
+        if (!article.tags) continue
+        article.tags = article.tags.map((tag) => (tag.id === updatedTag.id ? { ...updatedTag } : tag))
+    }
+}
 
 export const mockTagRepository: ITagRepository = {
     findAll: async () => tags,
@@ -12,6 +20,7 @@ export const mockTagRepository: ITagRepository = {
         const tag = tags.find((candidate) => candidate.id === id)
         if (!tag) return undefined
         Object.assign(tag, values)
+        propagateTagUpdate(tag)
         return tag
     },
     delete: async (id) => {

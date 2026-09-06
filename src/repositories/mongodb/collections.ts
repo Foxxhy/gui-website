@@ -6,6 +6,7 @@ export const mongoCollections = {
     pages: 'pages',
     featureFlags: 'featureFlags',
     contactFormConfigurations: 'contactFormConfigurations',
+    contactSubmissions: 'contactSubmissions',
     analyticsEvents: 'analytics_events',
 } as const
 

@@ -25,6 +25,12 @@ export interface IContactFormConfiguration {
     fields: IContactField[]
 }
 
+export interface IContactSubmission {
+    id: string
+    values: Record<string, string>
+    submittedAt: string
+}
+
 export type IFieldErrors = Record<string, string>
 
 export interface IActionResult<T = undefined> {

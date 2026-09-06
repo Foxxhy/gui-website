@@ -110,6 +110,7 @@ export const serviceUser = {
             pseudonym: String(values.pseudonym).trim(),
             email: serviceToTrimmedString(values.email, serviceValidationLimits.email).toLocaleLowerCase('fr-FR'),
             role: values.role ?? IRole.EDITOR,
+            sessionVersion: 0,
             createdAt: now,
             updatedAt: now,
         }

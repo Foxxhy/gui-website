@@ -1,6 +1,7 @@
 import { getRepositories } from '@/repositories'
 import { parseContactFieldFromFormData } from '@/lib/contact-field-form'
 import { serviceAnalytics } from '@/services/analytics'
+import { serviceRateLimit } from '@/services/rate-limit'
 import {
     serviceFieldErrors,
     serviceIsValidEmail,
@@ -14,6 +15,7 @@ import {
     type IActionResult,
     type IContactField,
     type IContactFormConfiguration,
+    type IContactSubmission,
     type IFieldErrors,
 } from '@/types'
 
@@ -25,6 +27,8 @@ const isValidPhone = (value: string) =>
 
 const isValidTechnicalName = (value: string) =>
     /^[a-z][a-z0-9_]*$/i.test(value)
+
+const CONTACT_SUBMIT_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 }
 
 const validateContactField = async (
     values: Partial<IContactField>,
@@ -79,8 +83,16 @@ export const serviceContact = {
         return configuration.fields.find((field) => field.id === id)
     },
     submit: async (formData: FormData): Promise<IActionResult> => {
+        const clientKey = typeof formData.get('clientKey') === 'string'
+            ? formData.get('clientKey') as string
+            : 'anonymous'
+        if (!serviceRateLimit.check(`contact:${clientKey}`, CONTACT_SUBMIT_RATE_LIMIT.limit, CONTACT_SUBMIT_RATE_LIMIT.windowMs)) {
+            return { success: false, message: 'Trop de soumissions. Réessayez plus tard.' }
+        }
+
         const configuration = await getRepositories().settings.getContactFormConfiguration()
         const errors: IFieldErrors = {}
+        const values: Record<string, string> = {}
 
         for (const field of configuration.fields) {
             const limit =
@@ -112,6 +124,7 @@ export const serviceContact = {
             ) {
                 errors[field.technicalName] = 'Veuillez choisir une option valide.'
             }
+            if (value) values[field.technicalName] = value
         }
 
         const consent = formData.get('consent')
@@ -123,6 +136,12 @@ export const serviceContact = {
             return { success: false, message: 'Le formulaire contient des erreurs.', errors }
         }
 
+        const submission: IContactSubmission = {
+            id: `submission-${Date.now()}`,
+            values,
+            submittedAt: new Date().toISOString(),
+        }
+        await getRepositories().contactSubmissions.create(submission)
         await serviceAnalytics.trackEvent('contact-submission', '/contact')
         return {
             success: true,

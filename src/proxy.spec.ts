@@ -6,7 +6,7 @@ import { proxy, validateAdminSessionCookie } from '@/proxy'
 
 describe('validateAdminSessionCookie', () => {
     it('accepts a valid session token for an active user', async () => {
-        const token = createSessionToken('user-admin')
+        const token = createSessionToken('user-admin', 0)
         await expect(validateAdminSessionCookie(token)).resolves.toBe(true)
     })
 
@@ -19,7 +19,7 @@ describe('validateAdminSessionCookie', () => {
     })
 
     it('rejects a blocked user', async () => {
-        const token = createSessionToken('user-blocked')
+        const token = createSessionToken('user-blocked', 0)
         await expect(validateAdminSessionCookie(token)).resolves.toBe(false)
     })
 })
@@ -37,7 +37,7 @@ describe('proxy', () => {
     })
 
     it('allows authenticated requests through', async () => {
-        const token = createSessionToken('user-admin')
+        const token = createSessionToken('user-admin', 0)
         const request = new NextRequest('http://localhost/administration', {
             headers: {
                 cookie: `${serviceSessionCookie}=${token}`,

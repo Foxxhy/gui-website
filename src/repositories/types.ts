@@ -5,6 +5,7 @@ import type {
     IArticle,
     IContactField,
     IContactFormConfiguration,
+    IContactSubmission,
     IFeatureFlags,
     IPage,
     ITag,
@@ -45,6 +46,10 @@ export interface ISettingsRepository {
     reorderContactField(id: string, direction: 'up' | 'down'): Promise<IContactFormConfiguration | undefined>
 }
 
+export interface IContactSubmissionRepository {
+    create(submission: IContactSubmission): Promise<IContactSubmission>
+}
+
 export interface IAnalyticsRepository {
     track(event: IAnalyticsEvent): Promise<IAnalyticsEvent>
     findBetween(start: Date, end: Date): Promise<IAnalyticsEvent[]>
@@ -57,5 +62,6 @@ export interface IRepositories {
     users: IUserRepository
     tags: ITagRepository
     settings: ISettingsRepository
+    contactSubmissions: IContactSubmissionRepository
     analytics: IAnalyticsRepository
 }

@@ -4,9 +4,11 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { configApp } from '@/configs'
 import { createSessionToken } from '@/services/auth/session-token'
-import { serviceAuth, serviceSessionCookie } from '@/services'
+import { serviceAuth, serviceRateLimit, serviceSessionCookie } from '@/services'
 import { serviceToTrimmedString } from '@/services'
 import type { IActionResult } from '@/types'
+
+const LOGIN_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 }
 
 export const actionLogin = async (
     _previousState: IActionResult | undefined,
@@ -18,16 +20,24 @@ export const actionLogin = async (
     if (!login || !password || password.length > 200) {
         return { success: false, message: 'Les identifiants sont invalides.' }
     }
+
+    const rateLimitKey = `login:${login.toLocaleLowerCase('fr-FR')}`
+    if (!serviceRateLimit.check(rateLimitKey, LOGIN_RATE_LIMIT.limit, LOGIN_RATE_LIMIT.windowMs)) {
+        return { success: false, message: 'Trop de tentatives de connexion. Réessayez plus tard.' }
+    }
+
     const user = await serviceAuth.authenticate({ login, password })
 
     if (!user) {
         return { success: false, message: 'Identifiants invalides.' }
     }
 
+    serviceRateLimit.reset(rateLimitKey)
+
     const cookieStore = await cookies()
     cookieStore.set(
         serviceSessionCookie,
-        createSessionToken(user.id),
+        createSessionToken(user.id, user.sessionVersion),
         configApp.session.cookieOptions
     )
     redirect(

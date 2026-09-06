@@ -19,6 +19,10 @@ jest.mock('@/services', () => ({
     serviceAuth: {
         authenticate: jest.fn(),
     },
+    serviceRateLimit: {
+        check: jest.fn(() => true),
+        reset: jest.fn(),
+    },
     serviceSessionCookie: 'association_poc_session',
     serviceToTrimmedString: jest.requireActual('@/services/validation').serviceToTrimmedString,
 }))
@@ -67,14 +71,14 @@ describe('actionLogin', () => {
     })
 
     it('sets the session cookie and redirects on success', async () => {
-        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
+        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin', sessionVersion: 0 })
         const formData = new FormData()
         formData.set('login', 'admin')
         formData.set('password', 'admin')
         formData.set('returnTo', '/administration/articles')
 
         await expect(actionLogin(undefined, formData)).rejects.toThrow('NEXT_REDIRECT')
-        expect(createSessionToken).toHaveBeenCalledWith('user-admin')
+        expect(createSessionToken).toHaveBeenCalledWith('user-admin', 0)
         expect(cookieStore.set).toHaveBeenCalledWith(
             serviceSessionCookie,
             'signed-session-token',
@@ -84,7 +88,7 @@ describe('actionLogin', () => {
     })
 
     it('redirects to administration when returnTo is not an admin path', async () => {
-        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin' })
+        ;(serviceAuth.authenticate as jest.Mock).mockResolvedValue({ id: 'user-admin', sessionVersion: 0 })
         const formData = new FormData()
         formData.set('login', 'admin')
         formData.set('password', 'admin')

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
+import { headers } from 'next/headers'
 import { configApp } from '@/configs'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -12,9 +13,11 @@ export const metadata: Metadata = {
     description: configApp.site.description,
 }
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+    const nonce = (await headers()).get('x-nonce') ?? undefined
+
     return (
-        <html lang="fr" className={cn('font-sans', geist.variable)}>
+        <html lang="fr" className={cn('font-sans', geist.variable)} data-nonce={nonce}>
             <body>
                 <TooltipProvider>{children}</TooltipProvider>
             </body>

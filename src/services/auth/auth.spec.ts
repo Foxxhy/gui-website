@@ -22,10 +22,10 @@ describe('serviceAuth', () => {
     })
 
     it('creates a session for a valid token and rejects blocked users', async () => {
-        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-admin'))).resolves.toMatchObject({
+        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-admin', 0))).resolves.toMatchObject({
             user: { id: 'user-admin' },
         })
-        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-blocked'))).resolves.toBeUndefined()
+        await expect(serviceAuth.getSessionFromToken(createSessionToken('user-blocked', 0))).resolves.toBeUndefined()
     })
 
     it.each([
