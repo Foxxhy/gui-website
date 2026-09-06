@@ -25,7 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { IRole, type IUser } from '@/types'
+import type { IUser } from '@/types'
 import { ROLE_LABELS } from './role-permissions'
 
 export const UserAdminPanel = ({
