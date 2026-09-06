@@ -82,27 +82,33 @@ export const LoginForm = ({ returnTo }: { returnTo: string }) => {
     )
 }
 
+export const ChangeOwnPasswordFields = ({ state }: { state: IActionResult }) => (
+    <>
+        <div className="space-y-2">
+            <Label htmlFor="currentPassword">Mot de passe actuel</Label>
+            <Input autoComplete="current-password" id="currentPassword" name="currentPassword" required type="password" />
+            {state.errors?.currentPassword && <span className="text-sm text-destructive" role="alert">{state.errors.currentPassword}</span>}
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+            <Input autoComplete="new-password" id="newPassword" name="newPassword" required type="password" />
+            {state.errors?.newPassword && <span className="text-sm text-destructive" role="alert">{state.errors.newPassword}</span>}
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmation du nouveau mot de passe</Label>
+            <Input autoComplete="new-password" id="confirmPassword" name="confirmPassword" required type="password" />
+            {state.errors?.confirmPassword && <span className="text-sm text-destructive" role="alert">{state.errors.confirmPassword}</span>}
+        </div>
+        {state.message && <p aria-live="polite" className="text-sm" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
+    </>
+)
+
 export const ChangeOwnPasswordForm = () => {
     const [state, action, pending] = useActionState(actionChangeOwnPassword, initialState)
     return (
         <form action={action} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="currentPassword">Mot de passe actuel</Label>
-                <Input autoComplete="current-password" id="currentPassword" name="currentPassword" required type="password" />
-                {state.errors?.currentPassword && <span className="text-sm text-destructive" role="alert">{state.errors.currentPassword}</span>}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-                <Input autoComplete="new-password" id="newPassword" name="newPassword" required type="password" />
-                {state.errors?.newPassword && <span className="text-sm text-destructive" role="alert">{state.errors.newPassword}</span>}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmation du nouveau mot de passe</Label>
-                <Input autoComplete="new-password" id="confirmPassword" name="confirmPassword" required type="password" />
-                {state.errors?.confirmPassword && <span className="text-sm text-destructive" role="alert">{state.errors.confirmPassword}</span>}
-            </div>
+            <ChangeOwnPasswordFields state={state} />
             <Button disabled={pending} type="submit">{pending ? 'Modification…' : 'Modifier mon mot de passe'}</Button>
-            {state.message && <p aria-live="polite" className="text-sm" role={state.success ? 'status' : 'alert'}>{state.message}</p>}
         </form>
     )
 }

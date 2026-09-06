@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { actionLogout } from '@/actions'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -31,6 +31,18 @@ export const AdminSidebarNav = ({
     siteTitle: string
 }) => {
     const pathname = usePathname()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const isAccountOpen = searchParams.get('account') === '1'
+
+    const openAccountPanel = () => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('account', '1')
+        if (!params.has('tab')) {
+            params.set('tab', 'informations')
+        }
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     return (
         <Sidebar collapsible="offcanvas">
@@ -106,19 +118,18 @@ export const AdminSidebarNav = ({
             </SidebarContent>
             <SidebarFooter className="border-t border-sidebar-border">
                 <div className="flex flex-col gap-2 p-2">
-                    <Link
+                    <Button
                         className={cn(
                             buttonVariants({
-                                variant: isActivePath(pathname, navigation.account.href)
-                                    ? 'secondary'
-                                    : 'outline',
+                                variant: isAccountOpen ? 'secondary' : 'outline',
                             }),
                             'w-full justify-center'
                         )}
-                        href={navigation.account.href}
+                        onClick={openAccountPanel}
+                        type="button"
                     >
                         {navigation.account.label}
-                    </Link>
+                    </Button>
                     <form action={actionLogout}>
                         <Button className="w-full" type="submit">
                             Se déconnecter

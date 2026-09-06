@@ -1,6 +1,6 @@
 import { configApp } from '@/configs'
 import { AdminShell, buildAdminNavigation } from '@/components/admin'
-import { serviceAuth, serviceGetCurrentSession } from '@/services'
+import { serviceAuth, serviceGetCurrentSession, serviceUser } from '@/services'
 import { redirect } from 'next/navigation'
 
 export default async function AdministrationLayout({ children }: LayoutProps<'/administration'>) {
@@ -8,14 +8,17 @@ export default async function AdministrationLayout({ children }: LayoutProps<'/a
     if (!session) redirect('/connexion?returnTo=/administration')
 
     const { user } = session
-    const navigation = buildAdminNavigation(user.role, serviceAuth.canManage)
+    const [navigation, accountLogin] = await Promise.all([
+        Promise.resolve(buildAdminNavigation(user.role, serviceAuth.canManage)),
+        serviceUser.getAccountLoginByUserId(user.id),
+    ])
 
     return (
         <AdminShell
+            accountLogin={accountLogin}
             navigation={navigation}
             siteTitle={configApp.site.title}
-            userName={user.name}
-            userRole={user.role}
+            user={user}
         >
             {children}
         </AdminShell>
