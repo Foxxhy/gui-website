@@ -7,10 +7,12 @@ import {
     analyticsTrack,
 } from './analytics'
 import {
+    analyticsComputeCategoryViews,
     analyticsComputeStats,
     analyticsGetPeriodRange,
     analyticsIsKnownEventType,
 } from './stats'
+import { ICategory } from '@/types'
 
 describe('analyticsIsKnownEventType', () => {
     it('accepts known event types', () => {
@@ -90,6 +92,35 @@ describe('analyticsComputeStats', () => {
         const stats = analyticsComputeStats(analyticsEvents, 'today')
         expect(stats.timeline).toHaveLength(6)
         expect(stats.timeline[0]?.label).toBe('00h')
+    })
+})
+
+describe('analyticsComputeCategoryViews', () => {
+    it('aggregates article views by category', () => {
+        const views = analyticsComputeCategoryViews(
+            [
+                { articleId: 'article-1', count: 3 },
+                { articleId: 'article-2', count: 2 },
+                { articleId: 'article-1', count: 1 },
+            ],
+            [
+                { id: 'article-1', category: ICategory.ACTUALITES },
+                { id: 'article-2', category: ICategory.EVENEMENTS },
+            ]
+        )
+
+        expect(views).toEqual([
+            { category: ICategory.ACTUALITES, count: 4 },
+            { category: ICategory.EVENEMENTS, count: 2 },
+        ])
+    })
+
+    it('ignores articles without category', () => {
+        const views = analyticsComputeCategoryViews(
+            [{ articleId: 'orphan', count: 5 }],
+            [{ id: 'orphan' }]
+        )
+        expect(views).toEqual([])
     })
 })
 

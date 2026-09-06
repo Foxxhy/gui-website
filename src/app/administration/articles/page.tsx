@@ -1,7 +1,12 @@
 import Link from 'next/link'
-import { AdminMutationForm, AdminPreviewButton } from '@/components'
-import { AdminPageHeader, AdminTabs, FeatureFlagForm } from '@/components/admin'
-import { Badge } from '@/components/ui/badge'
+import {
+    AdminPageHeader,
+    AdminTabs,
+    ArticleListPreviewTab,
+    ArticleStatusCombobox,
+    FeatureFlagForm,
+} from '@/components/admin'
+import { ArticleListActions } from '@/components/admin/article-list-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -32,12 +37,14 @@ export default async function AdministrationArticlesPage() {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between gap-4">
                             <CardTitle>Liste des articles</CardTitle>
-                            <Button nativeButton={false} render={<Link href="/administration/articles/nouveau" />}>
-                                Créer un article
+                            <Button
+                                nativeButton={false}
+                                render={<Link href="/administration/articles/nouveau" />}
+                            >
+                                Rédiger
                             </Button>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <AdminPreviewButton preview={{ kind: 'articleList', articles }} />
+                        <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -51,26 +58,13 @@ export default async function AdministrationArticlesPage() {
                                         <TableRow key={article.id}>
                                             <TableCell>{article.title}</TableCell>
                                             <TableCell>
-                                                <Badge variant="secondary">{article.status}</Badge>
+                                                <ArticleStatusCombobox article={article} />
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        nativeButton={false}
-                                                        render={
-                                                            <Link
-                                                                href={`/administration/articles/${article.id}`}
-                                                            />
-                                                        }
-                                                        size="sm"
-                                                        variant="outline"
-                                                    >
-                                                        Consulter / modifier
-                                                    </Button>
-                                                    <AdminMutationForm area="articles" operation="supprimé">
-                                                        <input name="id" type="hidden" value={article.id} />
-                                                    </AdminMutationForm>
-                                                </div>
+                                                <ArticleListActions
+                                                    articleId={article.id}
+                                                    articleTitle={article.title}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -79,6 +73,7 @@ export default async function AdministrationArticlesPage() {
                         </CardContent>
                     </Card>
                 }
+                preview={<ArticleListPreviewTab articles={articles} />}
             />
         </>
     )

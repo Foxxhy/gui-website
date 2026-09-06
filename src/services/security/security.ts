@@ -37,7 +37,9 @@ export const serviceIsSafeUrl = (value: unknown): value is string => {
 export const serviceCreateCsp = (nonce: string, isDevelopment = process.env.NODE_ENV === 'development'): string => [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-eval'" : ''}`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    `style-src-elem 'self' 'nonce-${nonce}'`,
+    "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
     "connect-src 'self'",

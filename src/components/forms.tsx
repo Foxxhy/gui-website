@@ -135,10 +135,14 @@ export const AdminMutationForm = ({
     preview,
     submitLabel,
     submitClassName,
+    submitVariant = 'default',
     footer,
     formId,
     deferActions = false,
     middleSlot,
+    onFormValuesChange,
+    className,
+    actionsClassName,
 }: {
     area: 'articles' | 'pages' | 'contactForm' | 'tags' | 'users' | 'features'
     operation: string
@@ -146,18 +150,32 @@ export const AdminMutationForm = ({
     preview?: IAdminPreview
     submitLabel?: string
     submitClassName?: string
+    submitVariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
     footer?: React.ReactNode
     formId?: string
     deferActions?: boolean
     middleSlot?: React.ReactNode
+    onFormValuesChange?: (form: HTMLFormElement) => void
+    className?: string
+    actionsClassName?: string
 }) => {
     const [state, action, pending] = useActionState(actionSubmitAdminMutation, initialState)
     const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [previewValues, setPreviewValues] = useState(() => new FormData())
-    const updatePreview = (form: HTMLFormElement) => setPreviewValues(new FormData(form))
+    const updatePreview = (form: HTMLFormElement) => {
+        setPreviewValues(new FormData(form))
+        onFormValuesChange?.(form)
+    }
 
     const actions = (
-        <div className={footer ? 'flex flex-col gap-2' : 'flex flex-wrap gap-2'}>
+        <div
+            className={[
+                footer ? 'flex flex-col gap-2' : 'flex flex-wrap gap-2',
+                actionsClassName,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
             {preview && (
                 <Button
                     onClick={(event) => {
@@ -176,6 +194,7 @@ export const AdminMutationForm = ({
                 disabled={pending}
                 form={deferActions ? formId : undefined}
                 type="submit"
+                variant={submitVariant}
             >
                 {pending ? 'Traitement…' : (submitLabel ?? operation)}
             </Button>
@@ -184,7 +203,7 @@ export const AdminMutationForm = ({
     )
 
     return (
-        <div className="admin-editor space-y-4">
+        <div className={['admin-editor space-y-4', className].filter(Boolean).join(' ')}>
             {isPreviewOpen && preview && (
                 <AdminPreview
                     onClose={() => setIsPreviewOpen(false)}
